@@ -156,6 +156,19 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         <div class="charts-section">
             <div class="chart-container">
                 <h2>Amount by Project</h2>
+                <div class="chart-filters" id="projectAmountChartFilters" style="display: none;">
+                    <div class="chart-filter-buttons">
+                        <button type="button" class="chart-filter-btn" id="projectAmountChartSelectAll">All</button>
+                        <button type="button" class="chart-filter-btn" id="projectAmountChartSelectNone">None</button>
+                    </div>
+                    <div class="chart-filter-checkboxes">
+                        <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="0" checked> PO Coverage</label>
+                        <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="1" checked> Costs</label>
+                        <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="2" checked> Invoices</label>
+                        <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="3" checked> Deferment</label>
+                        <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="4" checked> Remaining Budget</label>
+                    </div>
+                </div>
                 <canvas id="projectAmountChart"></canvas>
                 <div class="chart-placeholder" id="projectAmountChartPlaceholder">No data available for this chart</div>
             </div>
@@ -707,6 +720,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             const projectPOCoverage = {{}};
             const projectCosts = {{}};
             const projectInvoices = {{}};
+            const projectDeferment = {{}};
             const projectHours = {{}};
             
             // Timeline data: monthly costs and remaining budget
@@ -719,19 +733,32 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const date = row.date || '';
                 const amount = row.amount || 0;
                 
-                // PO Coverage by project
+                // PO Coverage by project (includes PO events and positive deferment)
                 if (eventType === 'PO' && amount) {{
                     projectPOCoverage[project] = (projectPOCoverage[project] || 0) + amount;
                 }}
                 
-                // Costs by project (Working Time costs, Purchases, T&L, Deferment)
+                // Deferment handling: positive adds to PO and counts as invoiced, negative reduces PO
+                if (eventType === 'Deferment' && amount) {{
+                    projectDeferment[project] = (projectDeferment[project] || 0) + amount;
+                    if (amount > 0) {{
+                        // Positive deferment: add to PO coverage and count as invoiced
+                        projectPOCoverage[project] = (projectPOCoverage[project] || 0) + amount;
+                        projectInvoices[project] = (projectInvoices[project] || 0) + amount;
+                    }} else if (amount < 0) {{
+                        // Negative deferment: subtract from PO coverage
+                        projectPOCoverage[project] = (projectPOCoverage[project] || 0) + amount;
+                    }}
+                }}
+                
+                // Costs by project (Working Time costs, Purchases, T&L - Deferment is NOT a cost)
                 if (eventType === 'Working Time' && row.calculated_cost) {{
                     projectCosts[project] = (projectCosts[project] || 0) + row.calculated_cost;
-                }} else if ((eventType === 'Purchase' || eventType === 'T&L' || eventType === 'Deferment') && amount) {{
+                }} else if ((eventType === 'Purchase' || eventType === 'T&L') && amount) {{
                     projectCosts[project] = (projectCosts[project] || 0) + amount;
                 }}
                 
-                // Invoices by project
+                // Invoices by project (includes Invoice events and positive deferment)
                 if (eventType === 'Invoice' && amount) {{
                     projectInvoices[project] = (projectInvoices[project] || 0) + amount;
                 }}
@@ -745,15 +772,18 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 if (date && date.length >= 7) {{
                     const month = date.substring(0, 7);  // YYYY-MM
                     
-                    // Monthly PO Coverage
+                    // Monthly PO Coverage (includes PO events and deferment)
                     if (eventType === 'PO' && amount) {{
                         monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
                     }}
+                    if (eventType === 'Deferment' && amount) {{
+                        monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
+                    }}
                     
-                    // Monthly Costs
+                    // Monthly Costs (Deferment is NOT a cost)
                     if (eventType === 'Working Time' && row.calculated_cost) {{
                         monthlyCosts[month] = (monthlyCosts[month] || 0) + row.calculated_cost;
-                    }} else if ((eventType === 'Purchase' || eventType === 'T&L' || eventType === 'Deferment') && amount) {{
+                    }} else if ((eventType === 'Purchase' || eventType === 'T&L') && amount) {{
                         monthlyCosts[month] = (monthlyCosts[month] || 0) + amount;
                     }}
                 }}
@@ -773,8 +803,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 window.forecastChart.destroy();
             }}
             
-            // Financials by Project Chart (PO Coverage, Costs, Invoices)
-            const allProjects = [...new Set([...Object.keys(projectPOCoverage), ...Object.keys(projectCosts), ...Object.keys(projectInvoices)])];
+            // Financials by Project Chart (PO Coverage, Costs, Invoices, Deferment)
+            const allProjects = [...new Set([...Object.keys(projectPOCoverage), ...Object.keys(projectCosts), ...Object.keys(projectInvoices), ...Object.keys(projectDeferment)])];
             
             // Show/hide placeholder
             if (allProjects.length === 0) {{
@@ -784,6 +814,9 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             }}
             
             if (allProjects.length > 0) {{
+                // Show filter checkboxes
+                $('#projectAmountChartFilters').show();
+                
                 const ctx1 = document.getElementById('projectAmountChart').getContext('2d');
                 window.projectFinancialChart = new Chart(ctx1, {{
                 type: 'bar',
@@ -809,6 +842,13 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             data: allProjects.map(p => projectInvoices[p] || 0),
                             backgroundColor: 'rgba(102, 126, 234, 0.6)',
                             borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 1
+                        }},
+                        {{
+                            label: 'Deferment (€)',
+                            data: allProjects.map(p => projectDeferment[p] || 0),
+                            backgroundColor: 'rgba(128, 128, 128, 0.6)',
+                            borderColor: 'rgba(128, 128, 128, 1)',
                             borderWidth: 1
                         }},
                         {{
@@ -851,6 +891,30 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     }}
                 }}
             }});
+            
+                // Add event listeners for filter checkboxes
+                $('#projectAmountChartFilters .chart-filter-checkbox').on('change', function() {{
+                    const datasetIndex = parseInt($(this).data('dataset'));
+                    const isChecked = $(this).is(':checked');
+                    
+                    if (window.projectFinancialChart) {{
+                        const meta = window.projectFinancialChart.getDatasetMeta(datasetIndex);
+                        meta.hidden = !isChecked;
+                        window.projectFinancialChart.update();
+                    }}
+                }});
+                
+                // Add event listeners for "Összes" and "Egyik sem" buttons
+                $('#projectAmountChartSelectAll').on('click', function() {{
+                    $('#projectAmountChartFilters .chart-filter-checkbox').prop('checked', true).trigger('change');
+                }});
+                
+                $('#projectAmountChartSelectNone').on('click', function() {{
+                    $('#projectAmountChartFilters .chart-filter-checkbox').prop('checked', false).trigger('change');
+                }});
+            }} else {{
+                // Hide filter checkboxes if no data
+                $('#projectAmountChartFilters').hide();
             }}
             
             // Hours by Project Chart

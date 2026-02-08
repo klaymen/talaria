@@ -376,6 +376,55 @@ def get_css():
         color: #333;
         font-size: 1.3em;
         }
+        
+        .chart-filters {
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        }
+        
+        .chart-filter-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+        }
+        
+        .chart-filter-btn {
+        padding: 5px 12px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.85em;
+        cursor: pointer;
+        transition: background 0.2s;
+        }
+        
+        .chart-filter-btn:hover {
+        background: #5568d3;
+        }
+        
+        .chart-filter-checkboxes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        }
+        
+        .chart-filter-checkboxes label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.9em;
+        color: #555;
+        cursor: pointer;
+        }
+        
+        .chart-filter-checkboxes input[type="checkbox"] {
+        cursor: pointer;
+        }
 
         .chart-container canvas {
         max-width: 100%;
