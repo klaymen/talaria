@@ -817,6 +817,18 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 // Show filter checkboxes
                 $('#projectAmountChartFilters').show();
                 
+                // Preserve checkbox states before creating new chart
+                const checkboxStates = {{}};
+                $('#projectAmountChartFilters .chart-filter-checkbox').each(function() {{
+                    const datasetIndex = parseInt($(this).data('dataset'));
+                    checkboxStates[datasetIndex] = $(this).is(':checked');
+                }});
+                
+                // Remove old event listeners to prevent duplicates
+                $('#projectAmountChartFilters .chart-filter-checkbox').off('change.chartFilter');
+                $('#projectAmountChartSelectAll').off('click.chartFilter');
+                $('#projectAmountChartSelectNone').off('click.chartFilter');
+                
                 const ctx1 = document.getElementById('projectAmountChart').getContext('2d');
                 window.projectFinancialChart = new Chart(ctx1, {{
                 type: 'bar',
@@ -828,35 +840,40 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             data: allProjects.map(p => projectPOCoverage[p] || 0),
                             backgroundColor: 'rgba(40, 167, 69, 0.6)',
                             borderColor: 'rgba(40, 167, 69, 1)',
-                            borderWidth: 1
+                            borderWidth: 1,
+                            hidden: !checkboxStates[0]
                         }},
                         {{
                             label: 'Costs (€)',
                             data: allProjects.map(p => projectCosts[p] || 0),
                             backgroundColor: 'rgba(220, 53, 69, 0.6)',
                             borderColor: 'rgba(220, 53, 69, 1)',
-                            borderWidth: 1
+                            borderWidth: 1,
+                            hidden: !checkboxStates[1]
                         }},
                         {{
                             label: 'Invoices (€)',
                             data: allProjects.map(p => projectInvoices[p] || 0),
                             backgroundColor: 'rgba(102, 126, 234, 0.6)',
                             borderColor: 'rgba(102, 126, 234, 1)',
-                            borderWidth: 1
+                            borderWidth: 1,
+                            hidden: !checkboxStates[2]
                         }},
                         {{
                             label: 'Deferment (€)',
                             data: allProjects.map(p => projectDeferment[p] || 0),
                             backgroundColor: 'rgba(128, 128, 128, 0.6)',
                             borderColor: 'rgba(128, 128, 128, 1)',
-                            borderWidth: 1
+                            borderWidth: 1,
+                            hidden: !checkboxStates[3]
                         }},
                         {{
                             label: 'Remaining Budget (€)',
                             data: allProjects.map(p => (projectPOCoverage[p] || 0) - (projectCosts[p] || 0)),
                             backgroundColor: 'rgba(255, 193, 7, 0.6)',
                             borderColor: 'rgba(255, 193, 7, 1)',
-                            borderWidth: 1
+                            borderWidth: 1,
+                            hidden: !checkboxStates[4]
                         }}
                     ]
                 }},
@@ -892,8 +909,17 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }}
             }});
             
-                // Add event listeners for filter checkboxes
-                $('#projectAmountChartFilters .chart-filter-checkbox').on('change', function() {{
+                // Apply preserved checkbox states to chart
+                window.projectFinancialChart.data.datasets.forEach((dataset, index) => {{
+                    if (checkboxStates[index] !== undefined) {{
+                        const meta = window.projectFinancialChart.getDatasetMeta(index);
+                        meta.hidden = !checkboxStates[index];
+                    }}
+                }});
+                window.projectFinancialChart.update();
+                
+                // Add event listeners for filter checkboxes (using namespaced events)
+                $('#projectAmountChartFilters .chart-filter-checkbox').on('change.chartFilter', function() {{
                     const datasetIndex = parseInt($(this).data('dataset'));
                     const isChecked = $(this).is(':checked');
                     
@@ -904,13 +930,13 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     }}
                 }});
                 
-                // Add event listeners for "Összes" and "Egyik sem" buttons
-                $('#projectAmountChartSelectAll').on('click', function() {{
-                    $('#projectAmountChartFilters .chart-filter-checkbox').prop('checked', true).trigger('change');
+                // Add event listeners for "All" and "None" buttons (using namespaced events)
+                $('#projectAmountChartSelectAll').on('click.chartFilter', function() {{
+                    $('#projectAmountChartFilters .chart-filter-checkbox').prop('checked', true).trigger('change.chartFilter');
                 }});
                 
-                $('#projectAmountChartSelectNone').on('click', function() {{
-                    $('#projectAmountChartFilters .chart-filter-checkbox').prop('checked', false).trigger('change');
+                $('#projectAmountChartSelectNone').on('click.chartFilter', function() {{
+                    $('#projectAmountChartFilters .chart-filter-checkbox').prop('checked', false).trigger('change.chartFilter');
                 }});
             }} else {{
                 // Hide filter checkboxes if no data
@@ -1983,15 +2009,15 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 
                 // Format closure date (already retrieved above)
                 let closureDateFormatted = '-';
-                if (closureDate) {{
-                    // Format closure date
-                    if (closureDate.length > 10) {{
-                        closureDateFormatted = closureDate.split(' ')[0];
-                    }} else {{
-                        closureDateFormatted = closureDate;
+                    if (closureDate) {{
+                        // Format closure date
+                        if (closureDate.length > 10) {{
+                            closureDateFormatted = closureDate.split(' ')[0];
+                        }} else {{
+                            closureDateFormatted = closureDate;
+                        }}
                     }}
-                }}
-                
+                    
                 // Format EAC (already retrieved above)
                 let eacFormatted = '-';
                 if (eac !== null) {{
