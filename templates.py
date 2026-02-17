@@ -36,42 +36,68 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             <div class="help-content">
                 <button class="close-btn" id="closeHelp">&times;</button>
                 <h2>Dashboard Guide</h2>
+
+                <h3>Data Source</h3>
+                <p>The dashboard reads <strong>all sheets/tabs</strong> from the input Excel file. Records from every sheet are merged into a single dataset. Each record tracks which sheet it originated from.</p>
+
+                <h3>Event Types</h3>
+                <ul>
+                    <li><strong>PO (Purchase Order):</strong> Adds to the project budget (PO Coverage).</li>
+                    <li><strong>Working Time:</strong> A cost. Calculated as hours &times; hourly rate &times; (1 + additional rate). The calculated cost is shown instead of the Amount field.</li>
+                    <li><strong>Purchase:</strong> A direct cost (e.g. software licenses, hardware).</li>
+                    <li><strong>T&amp;L:</strong> Travel &amp; Logistics costs.</li>
+                    <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a cost, not added to PO coverage. Used for the Missing Invoice / Overinvoiced calculation.</li>
+                    <li><strong>Deferment:</strong> Positive deferment adds to PO coverage and counts as invoiced. Negative deferment reduces PO coverage. Not included in costs.</li>
+                    <li><strong>Financial Record:</strong> Positive amounts count as invoiced (marking amounts that will be invoiced later, so they don&rsquo;t appear as uninvoiced). Negative amounts reduce PO coverage (decreasing the budget). Not included in costs.</li>
+                    <li><strong>Closure:</strong> Marks the project end date. The budget forecast extends to the closure month.</li>
+                </ul>
+
                 <h3>Summary Cards</h3>
                 <p><strong>Cost/Invoiced:</strong> Ratio of total invoices to total costs, expressed as a percentage.</p>
                 <p><strong>Total Projects:</strong> Number of unique projects in the dataset.</p>
-                <p><strong>PO Coverage:</strong> Total Purchase Order coverage across all projects.</p>
-                <p><strong>Total Costs:</strong> Sum of all costs including Working Time, Purchases, and T&L. Deferment is handled separately: positive deferment adds to PO coverage and counts as invoiced, negative deferment reduces PO coverage. Financial Record is also handled separately: positive amounts count as invoiced, negative amounts reduce PO coverage.</p>
-                <p><strong>Total Invoices:</strong> Total invoiced amounts (informational only).</p>
-                <p><strong>Missing Invoice/Overinvoiced:</strong> Difference between Total Invoices and Total Costs. Negative values (shown in red) indicate missing invoices (not enough invoiced), positive values indicate overinvoicing.</p>
+                <p><strong>PO Coverage:</strong> Total Purchase Order coverage across all projects (includes positive Deferment and is reduced by negative Deferment and negative Financial Records).</p>
+                <p><strong>Total Costs:</strong> Sum of Working Time + Purchases + T&amp;L. Deferment and Financial Record are not costs.</p>
+                <p><strong>Total Invoices:</strong> Total invoiced amounts (includes Invoice events, positive Deferment, and positive Financial Records).</p>
+                <p><strong>Missing Invoice/Overinvoiced:</strong> Total Invoices minus Total Costs. Negative (red) = missing invoices; positive = overinvoiced.</p>
                 <p><strong>Remaining Budget:</strong> PO Coverage minus Total Costs.</p>
-                
+
                 <h3>Charts</h3>
-                <p><strong>Amount by Project:</strong> Shows total amounts (POs, Invoices, Costs) grouped by project.</p>
-                <p><strong>Timeline:</strong> Displays monthly costs and remaining budget over time.</p>
+                <p><strong>Amount by Project:</strong> Shows PO Coverage, Costs, Invoices, Deferment, and Remaining Budget grouped by project.</p>
+                <p><strong>Timeline:</strong> Monthly costs and cumulative remaining budget over time.</p>
                 <p><strong>Monthly Working Time Summary:</strong> Aggregated hours and costs by month.</p>
-                <p><strong>Budget Forecast:</strong> Projects future budget trends based on average monthly costs from the last 2 months.</p>
-                
+                <p><strong>Budget Forecast:</strong> Projects future budget trends based on average monthly costs from the last 2 months. Green = positive forecast, orange = negative.</p>
+
+                <h3>Data Table</h3>
+                <p>The data table shows all records with the following features:</p>
+                <ul>
+                    <li><strong>Pagination:</strong> Choose page size (25, 50, 100, 250, or All rows) to control how many records are displayed at once.</li>
+                    <li><strong>Sheet Filter:</strong> Filter the table to show records from a specific Excel sheet/tab.</li>
+                    <li><strong>Search:</strong> Full-text search across all fields.</li>
+                    <li><strong>Comments:</strong> Records with comments show a blue dot (&bull;) next to the amount. Hover over the row to see the full comment. Comments come from both a dedicated Comment column and cell-level Excel comments (sticky notes).</li>
+                    <li><strong>Export:</strong> Export filtered data to CSV (includes Sheet and Comment columns).</li>
+                </ul>
+
                 <h3>Project Details</h3>
                 <p>Each project card shows detailed financial information including:</p>
                 <ul>
                     <li><strong>PO Coverage:</strong> Total Purchase Order coverage for the project</li>
-                    <li><strong>Total Costs:</strong> Sum of all cost types</li>
+                    <li><strong>Total Costs:</strong> Sum of all cost types (Working Time + Purchase + T&amp;L)</li>
+                    <li><strong>Closure Date:</strong> Project end date (from Closure events)</li>
+                    <li><strong>EAC (Estimated At Completion):</strong> Forecasted remaining budget at closure</li>
                     <li><strong>Invoices:</strong> Total invoiced amounts</li>
-                    <li><strong>Missing Invoice/Overinvoiced:</strong> Difference between Total Invoices and Total Costs. Negative values (shown in red) indicate missing invoices (not enough invoiced), positive values indicate overinvoicing</li>
+                    <li><strong>Missing Invoice/Overinvoiced:</strong> Total Invoices minus Total Costs</li>
                     <li><strong>Remaining Budget:</strong> Current budget status (green if positive, red if negative)</li>
-                    <li><strong>Working Time Costs:</strong> Costs from working time entries</li>
-                    <li><strong>Purchase Costs:</strong> Costs from purchase events</li>
-                    <li><strong>T&L Costs:</strong> Travel and Logistics costs</li>
-                    <li><strong>Deferment:</strong> Positive deferment adds to PO coverage and counts as invoiced. Negative deferment reduces PO coverage. Deferment is not included in costs.</li>
-                    <li><strong>Financial Record:</strong> Positive amounts count as invoiced (marking amounts that will be invoiced later). Negative amounts reduce PO coverage (decreasing the budget). Not included in costs.</li>
+                    <li><strong>Working Time / Purchase / T&amp;L Costs:</strong> Breakdown by cost type</li>
+                    <li><strong>Deferment:</strong> Positive adds to PO coverage and counts as invoiced. Negative reduces PO coverage. Not a cost.</li>
+                    <li><strong>Financial Record:</strong> Positive counts as invoiced. Negative reduces PO coverage. Not a cost.</li>
                     <li><strong>Monthly Cost Forecast Rate:</strong> Average monthly cost used for budget forecasting</li>
                 </ul>
-                
+
                 <h3>Status Indicators</h3>
                 <p><strong>Green box:</strong> Forecasted budget is positive</p>
                 <p><strong>Yellow box:</strong> Forecasted budget is slightly negative (only in last month and within 10% of project budget)</p>
                 <p><strong>Red box:</strong> Forecasted budget is significantly negative (beyond 10% threshold or current budget already negative)</p>
-                
+
                 <h3>Filters</h3>
                 <p>Use the filter section to filter data by date range, project, or event type. Quick filters are available for financial years, quarters, and months.</p>
             </div>

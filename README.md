@@ -4,28 +4,35 @@ A Python tool that reads Excel files containing project tracking data and genera
 
 ## Features
 
-- **Excel File Parsing**: Reads Excel files with project tracking data
+- **Multi-Sheet Excel Parsing**: Reads all sheets/tabs from an Excel file and merges them into a single dataset
 - **Interactive Dashboard**: Generates a static HTML file with embedded data
-- **Cost Calculations**: 
-  - Working Time costs are automatically calculated as: `hours × hourly_rate × (1 + additional_rate/100)`
+- **Cost Calculations**:
+  - Working Time costs are automatically calculated as: `hours × hourly_rate × (1 + additional_rate)`
   - Monthly summaries for Working Time events
 - **Financial Tracking**:
   - PO (Purchase Orders) represent coverage/budget for projects
-  - Invoices deduct from PO coverage
+  - Invoices are tracked as informational (not a cost)
   - Purchases and T&L are tracked as costs
+  - Deferment: positive adds to PO coverage and counts as invoiced, negative reduces PO coverage
+  - Financial Record: positive counts as invoiced (for future invoicing), negative reduces PO coverage
   - Remaining budget calculation per project
+- **Comments**: Supports both a dedicated Comment column and cell-level Excel comments (sticky notes), displayed as tooltips on hover in the data table
 - **Visualizations**: Multiple charts including:
-  - Amount by Project (PO Coverage, Costs, Invoices, Remaining Budget)
+  - Amount by Project (PO Coverage, Costs, Invoices, Deferment, Remaining Budget)
   - Hours by Project (bar chart)
   - Timeline (monthly costs and remaining budget)
   - Budget Forecast (with actual and forecasted data)
-- **Filtering**: 
+- **Filtering**:
   - Quick filters for projects (clickable buttons)
   - Filter by event type
   - Filter by date range (auto-set to data range)
   - Quick filters for financial years, quarters, and months
-- **Search**: Search functionality in the data table
-- **Export**: Export filtered data to CSV
+- **Data Table**:
+  - Paginated display (25, 50, 100, 250, or all rows)
+  - Sheet filter to show records from specific tabs
+  - Full-text search across all fields
+  - Comment tooltips (blue dot indicator on hover)
+  - Export filtered data to CSV (includes Sheet and Comment columns)
 - **Project Details**: Detailed financial statistics for each project including:
   - Status indicators (green/yellow/red) based on forecasted budget
   - Closure date and EAC (Estimated At Completion)
@@ -38,7 +45,7 @@ A Python tool that reads Excel files containing project tracking data and genera
 The codebase is organized into modular components for better maintainability:
 
 - **`generate_dashboard.py`** - Main entry point that orchestrates the dashboard generation
-- **`parsers.py`** - Excel file parsing functions (amount, hours, rates, dates)
+- **`parsers.py`** - Excel file parsing functions (reads all sheets, extracts comments)
 - **`calculations.py`** - Financial calculations and statistics
 - **`styles.py`** - CSS styles for the dashboard
 - **`templates.py`** - HTML and JavaScript template generation
@@ -68,67 +75,94 @@ python generate_dashboard.py data.xlsx my_dashboard.html
 
 ## Excel File Format
 
-The Excel file should contain the following columns:
+The input Excel file can contain **multiple sheets/tabs** — all sheets are read and merged into a single dataset. Each sheet should contain the following columns:
 
 - **#**: Row number (optional)
 - **Date**: Date in format YYYY-MM-DD or other common formats
-- **Event Type**: Type of event (e.g., "Working Time", "PO", "Invoice", "T&L", "Purchase", "Deferment", "Closure")
+- **Event Type**: Type of event (see Event Types below)
 - **Project**: Project name
 - **Hourly Rate**: Hourly rate (can include € symbol)
-- **Additional Rate**: Additional rate percentage (can include % symbol)
+- **Additional Rate**: Additional rate as a decimal (e.g. 0.05 = 5%)
 - **Hours**: Number of hours
 - **Amount**: Amount (can include € symbol and commas)
+- **Comment**: Optional comment text (displayed as tooltip in the dashboard)
+
+### Event Types
+
+| Event Type | Description |
+|---|---|
+| **Working Time** | Work hours. Cost = hours × hourly rate × (1 + additional rate). Not entered as Amount. |
+| **PO** | Purchase Order. Adds to the project budget (PO Coverage). |
+| **Invoice** | Invoiced amount. Informational only — not a cost. Used for Missing Invoice calculation. |
+| **Purchase** | Direct cost (e.g. software licenses, hardware). |
+| **T&L** | Travel & Logistics cost. |
+| **Deferment** | Positive: adds to PO coverage and counts as invoiced. Negative: reduces PO coverage. Not a cost. |
+| **Financial Record** | Positive: counts as invoiced (for future invoicing, avoids showing as uninvoiced). Negative: reduces PO coverage (budget decrease). Not a cost. |
+| **Closure** | Marks the project end date. The budget forecast extends to this month. |
 
 ### Example Data
 
-| # | Date | Event Type | Project | Hourly Rate | Additional Rate | Hours | Amount |
-|---|------|------------|---------|-------------|-----------------|-------|--------|
-| 1 | 2026-01-01 | Working Time | Project_1 | €50.0 | 0.05% | 100.0 | |
-| 2 | 2026-01-01 | Working Time | Project_2 | €50.0 | 0.05% | 200.0 | |
-| 10 | 2026-01-01 | PO | Project_1 | | | | €100,000.00 |
-| 11 | 2026-02-01 | PO | Project_2 | | | | €50,000.00 |
-| 13 | 2026-02-01 | Invoice | Project_1 | | | | €20,000.00 |
-| 17 | 2026-02-15 | T&L | Project_3 | | | | €5,000.00 |
-| 18 | 2026-03-14 | Purchase | Project_1 | | | | €1,250.00 |
-| 19 | 2026-08-01 | Closure | Project_1 | | | | |
-| 24 | 2026-01-01 | Deferment | Project_4 | | | | €4,000.00 |
+| # | Date | Event Type | Project | Hourly Rate | Additional Rate | Hours | Amount | Comment |
+|---|------|------------|---------|-------------|-----------------|-------|--------|---------|
+| 1 | 2026-01-01 | Working Time | Project_1 | 50 | 0.05 | 100 | | |
+| 2 | 2026-01-01 | PO | Project_1 | | | | 100000 | Initial PO |
+| 3 | 2026-02-01 | Invoice | Project_1 | | | | 20000 | INV-2026-001 |
+| 4 | 2026-02-15 | T&L | Project_3 | | | | 5000 | Conference travel |
+| 5 | 2026-03-14 | Purchase | Project_1 | | | | 1250 | Software license |
+| 6 | 2026-01-01 | Deferment | Project_4 | | | | 4000 | Carried forward |
+| 7 | 2026-03-01 | Financial Record | Project_1 | | | | 15000 | Planned invoice for Q1 |
+| 8 | 2026-02-01 | Financial Record | Project_3 | | | | -3000 | Budget reduction |
+| 9 | 2026-08-01 | Closure | Project_1 | | | | | |
+
+### Cell Comments
+
+In addition to the Comment column, the dashboard also reads **cell-level Excel comments** (sticky notes). These are merged with any Comment column text and displayed together in the tooltip.
 
 ## Dashboard Features
 
 ### Summary Cards
-- Total Projects
-- PO Coverage (total budget from Purchase Orders)
-- Total Costs (Working Time + Purchases + T&L)
-- Total Invoices (deducted from PO coverage)
-- Remaining Budget (PO Coverage - Invoices - Costs)
-- Total Hours
+- **Cost/Invoiced**: Ratio of total invoices to total costs as a percentage
+- **Total Projects**: Number of unique projects
+- **PO Coverage**: Total budget from Purchase Orders (adjusted by Deferment and negative Financial Records)
+- **Total Costs**: Working Time + Purchases + T&L
+- **Total Invoices**: Invoice + positive Deferment + positive Financial Record amounts
+- **Missing Invoice/Overinvoiced**: Total Invoices minus Total Costs
+- **Remaining Budget**: PO Coverage minus Total Costs
+- **Total Hours**: Sum of all hours
 
 ### Filters
-- Filter by Project
+- Filter by Project (quick-filter buttons)
 - Filter by Event Type
 - Filter by Date Range
+- Quick filters for financial years, quarters, and months
 - Clear all filters
 
 ### Charts
-- **Amount by Project**: Bar chart showing PO Coverage, Costs, Invoices, and Remaining Budget per project
+- **Amount by Project**: Bar chart showing PO Coverage, Costs, Invoices, Deferment, and Remaining Budget per project
 - **Hours by Project**: Bar chart showing total hours per project
 - **Timeline**: Line chart showing monthly costs and cumulative remaining budget over time
 - **Budget Forecast**: Line chart showing actual and forecasted remaining budget, with color-coded forecast (green for positive, orange for negative)
 
 ### Data Table
-- Sortable table with all records
-- Search functionality
-- Export to CSV
+- Paginated display with configurable page size (25, 50, 100, 250, or all)
+- Sheet filter dropdown to show records from a specific Excel tab
+- Full-text search across all fields
+- Comment tooltips: rows with comments show a blue dot indicator; hover to see the full comment
+- Sheet column shows which Excel tab each record came from
+- Export to CSV (includes Sheet and Comment columns)
 
 ### Project Details
 - Detailed financial statistics for each project:
   - Status indicator (green/yellow/red box) based on forecasted budget
   - PO Coverage
-  - Total Costs (broken down by Working Time, Purchases, T&L, Deferment)
+  - Total Costs (broken down by Working Time, Purchases, T&L)
   - Invoices
+  - Missing Invoice/Overinvoiced
   - Closure Date (if project has a Closure event)
-  - EAC (Estimated At Completion - forecasted remaining budget at closure)
+  - EAC (Estimated At Completion — forecasted remaining budget at closure)
   - Remaining Budget (color-coded: green if positive, red if negative)
+  - Deferment (with color coding)
+  - Financial Record (blue if positive, red if negative)
   - Monthly Cost Forecast Rate
   - Total Hours
 
@@ -154,7 +188,7 @@ Simply open the generated HTML file in any modern web browser.
 
 The codebase follows a modular architecture:
 
-- **Parsers** (`parsers.py`): Handle Excel file reading and data parsing
+- **Parsers** (`parsers.py`): Handle Excel file reading across all sheets, data parsing, and comment extraction
 - **Calculations** (`calculations.py`): Perform all financial and statistical calculations
 - **Styles** (`styles.py`): Contains all CSS styling rules
 - **Templates** (`templates.py`): Generates the HTML structure and JavaScript code
@@ -168,18 +202,20 @@ This structure makes it easy to:
 
 ## Notes
 
-- **Working Time Cost Calculation**: For "Working Time" events, the cost is automatically calculated as `hours × hourly_rate × (1 + additional_rate/100)`. This calculated cost is displayed instead of the Amount field for Working Time events.
-- **PO Coverage**: Purchase Orders (PO) represent the total budget/coverage available for a project. This is the amount that can be invoiced.
-- **Invoices**: Invoice amounts are deducted from the PO coverage to track how much budget has been used.
-- **Costs**: Working Time (calculated), Purchases, T&L, and Deferment are all tracked as costs that reduce the remaining budget.
-- **Deferment**: Can be positive or negative, representing deferred costs or recovered costs.
+- **Multi-Sheet Support**: All sheets/tabs in the Excel file are read. Records from every sheet are merged and each record tracks which sheet it came from.
+- **Working Time Cost Calculation**: For "Working Time" events, the cost is automatically calculated as `hours × hourly_rate × (1 + additional_rate)`. This calculated cost is displayed instead of the Amount field for Working Time events.
+- **PO Coverage**: Purchase Orders (PO) represent the total budget/coverage available for a project.
+- **Invoices**: Invoice amounts are informational — they track how much has been billed but do not affect costs or PO coverage directly.
+- **Costs**: Working Time (calculated), Purchases, and T&L reduce the remaining budget. Deferment and Financial Record are NOT costs.
+- **Deferment**: Positive deferment adds to PO coverage and counts as invoiced. Negative deferment reduces PO coverage.
+- **Financial Record**: Positive amounts count as invoiced (marking future invoices so they don't appear as uninvoiced). Negative amounts reduce PO coverage (budget decrease).
 - **Closure**: A special event type that marks the end of a project. The forecast extends to the closure date + 1 month for individual projects.
 - **Forecast Logic**: The forecast uses the average monthly cost from the last 2 months to project future budget. For "All Projects" view, it sums individual project forecasts.
 - **Status Indicators**: Color-coded boxes (green/yellow/red) show forecasted budget status:
   - Green: Forecasted budget is positive
   - Yellow: Forecasted budget is slightly negative (within 10% of project budget)
   - Red: Forecasted budget is significantly negative (beyond 10% threshold)
-- **Remaining Budget**: Calculated as `PO Coverage - Invoices - Total Costs`. Negative values indicate over-budget situations.
+- **Remaining Budget**: Calculated as `PO Coverage - Total Costs`. Negative values indicate over-budget situations.
 - **Date Range**: The date filters are automatically set to the first and last event dates in the data.
 - The script automatically handles various date formats
 - Currency symbols (€, $) and formatting (commas) are automatically parsed
