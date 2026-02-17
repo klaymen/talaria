@@ -8,91 +8,91 @@ def get_css():
     """Return CSS styles as a string."""
     return """        :root {
         /* Primary palette */
-        --color-primary: #4f6bed;
-        --color-primary-hover: #3d56c6;
-        --color-primary-subtle: rgba(79, 107, 237, 0.08);
+        --color-primary: #3b5998;
+        --color-primary-hover: #2d4373;
+        --color-primary-subtle: rgba(59, 89, 152, 0.07);
 
         /* Gradient */
-        --gradient-header: linear-gradient(135deg, #4f6bed 0%, #6941c6 100%);
+        --gradient-header: linear-gradient(135deg, #2c3e6b 0%, #3b5998 100%);
 
         /* Surfaces */
-        --color-bg: #f0f2f5;
+        --color-bg: #f4f5f7;
         --color-surface: #ffffff;
-        --color-surface-alt: #f5f6f8;
-        --color-surface-hover: #ebedf0;
+        --color-surface-alt: #f8f9fa;
+        --color-surface-hover: #eef0f3;
 
         /* Text */
-        --color-text: #1a1d23;
-        --color-text-secondary: #5f6571;
-        --color-text-muted: #8b8f9a;
+        --color-text: #1e2328;
+        --color-text-secondary: #5a6270;
+        --color-text-muted: #848a96;
 
         /* Borders */
-        --color-border: #d8dbe0;
-        --color-border-light: #e8eaef;
+        --color-border: #d4d8df;
+        --color-border-light: #e6e9ed;
 
         /* Semantic */
-        --color-positive: #16a34a;
-        --color-negative: #dc2626;
-        --color-warning: #d97706;
-        --color-info: #2563eb;
+        --color-positive: #2e7d52;
+        --color-negative: #c0392b;
+        --color-warning: #b8860b;
+        --color-info: #2b6cb0;
 
         /* Shadows */
-        --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-        --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+        --shadow-md: 0 4px 12px rgba(0,0,0,0.07);
 
         /* Chart grid */
-        --chart-grid: rgba(0, 0, 0, 0.08);
-        --chart-grid-zero: rgba(0, 0, 0, 0.7);
-        --chart-text: #5f6571;
+        --chart-grid: rgba(0, 0, 0, 0.06);
+        --chart-grid-zero: rgba(0, 0, 0, 0.6);
+        --chart-text: #5a6270;
 
         /* Chart dataset colors */
-        --chart-po: #16a34a;
-        --chart-costs: #dc2626;
-        --chart-invoices: #4f6bed;
-        --chart-deferment: #71717a;
-        --chart-budget: #ca8a04;
-        --chart-hours: #7c3aed;
-        --chart-forecast-neg: #ea580c;
+        --chart-po: #2e7d52;
+        --chart-costs: #c0392b;
+        --chart-invoices: #3b5998;
+        --chart-deferment: #6b7280;
+        --chart-budget: #8b6914;
+        --chart-hours: #5b4a9e;
+        --chart-forecast-neg: #c75b2a;
         }
 
         [data-theme="dark"] {
-        --color-primary: #6d8cff;
-        --color-primary-hover: #8aa2ff;
-        --color-primary-subtle: rgba(109, 140, 255, 0.12);
+        --color-primary: #7a9ec9;
+        --color-primary-hover: #95b3d8;
+        --color-primary-subtle: rgba(122, 158, 201, 0.12);
 
-        --gradient-header: linear-gradient(135deg, #4f6bed 0%, #6941c6 100%);
+        --gradient-header: linear-gradient(135deg, #263858 0%, #3b5998 100%);
 
-        --color-bg: #111318;
-        --color-surface: #1a1d24;
-        --color-surface-alt: #22252e;
-        --color-surface-hover: #2a2e38;
+        --color-bg: #12141a;
+        --color-surface: #1b1e26;
+        --color-surface-alt: #232730;
+        --color-surface-hover: #2c303b;
 
-        --color-text: #e4e5e9;
-        --color-text-secondary: #9ca0ab;
-        --color-text-muted: #6b7080;
+        --color-text: #d9dbe0;
+        --color-text-secondary: #969baa;
+        --color-text-muted: #666d7e;
 
-        --color-border: #2e323c;
-        --color-border-light: #252830;
+        --color-border: #2e323e;
+        --color-border-light: #262a34;
 
-        --color-positive: #22c55e;
-        --color-negative: #f87171;
-        --color-warning: #fbbf24;
-        --color-info: #60a5fa;
+        --color-positive: #4caf6e;
+        --color-negative: #e07265;
+        --color-warning: #d4a94c;
+        --color-info: #6a9fd8;
 
         --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
         --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
 
-        --chart-grid: rgba(255, 255, 255, 0.08);
-        --chart-grid-zero: rgba(255, 255, 255, 0.5);
-        --chart-text: #9ca0ab;
+        --chart-grid: rgba(255, 255, 255, 0.07);
+        --chart-grid-zero: rgba(255, 255, 255, 0.45);
+        --chart-text: #969baa;
 
-        --chart-po: #22c55e;
-        --chart-costs: #f87171;
-        --chart-invoices: #6d8cff;
-        --chart-deferment: #a1a1aa;
-        --chart-budget: #facc15;
-        --chart-hours: #a78bfa;
-        --chart-forecast-neg: #fb923c;
+        --chart-po: #4caf6e;
+        --chart-costs: #e07265;
+        --chart-invoices: #7a9ec9;
+        --chart-deferment: #8b9099;
+        --chart-budget: #d4a94c;
+        --chart-hours: #9484c4;
+        --chart-forecast-neg: #d48050;
         }
 
         * {
@@ -691,16 +691,6 @@ def get_css():
         .project-card h3 {
         color: var(--color-primary);
         margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-        }
-
-        .project-coverage {
-        font-size: 0.65em;
-        font-weight: 500;
-        color: var(--color-text-muted);
         }
 
         .project-stats {
@@ -727,13 +717,9 @@ def get_css():
         }
 
         .project-stat.cost-highlight {
-        background: rgba(79, 107, 237, 0.07);
+        background: var(--color-primary-subtle);
         border-radius: 8px;
         padding: 8px 4px;
-        }
-
-        [data-theme="dark"] .project-stat.cost-highlight {
-        background: rgba(109, 140, 255, 0.12);
         }
 
         /* Collapsible sections */
