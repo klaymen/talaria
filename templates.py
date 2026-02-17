@@ -30,8 +30,11 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             <span class="header-info">Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</span>
         </header>
         
-        <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">&#9790;</button>
-        <div class="help-icon" id="helpIcon">?</div>
+        <div class="toolbar-strip">
+            <button class="toolbar-btn" id="themeToggle" title="Toggle dark mode">&#9790;</button>
+            <div class="toolbar-divider"></div>
+            <button class="toolbar-btn" id="helpIcon" title="Dashboard guide">?</button>
+        </div>
         
         <div class="help-modal" id="helpModal">
             <div class="help-content">
