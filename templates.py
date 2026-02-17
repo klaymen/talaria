@@ -26,7 +26,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 <body>
     <div class="container">
         <header>
-            <h1><svg class="header-icon" viewBox="0 0 64 64" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><!-- sole --><path d="M8 52c0 0 4 4 20 4s28-4 28-4l2 4c0 0-12 6-30 6S4 56 4 56z"/><!-- sandal body --><path d="M10 50c2-6 8-12 14-14l4-1c4 0 8 1 12 3 4 2 7 5 8 8l1 4c-6 2-16 3-24 3-8 0-14-1-15-3z" opacity="0.85"/><!-- ankle strap --><path d="M30 36c-2-4-1-8 1-12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/><!-- wing feathers --><path d="M28 34Q20 28 14 16Q18 22 26 30z"/><path d="M30 32Q24 24 22 10Q24 20 30 28z"/><path d="M32 31Q28 20 30 5Q30 18 33 27z"/><path d="M34 31Q33 18 38 4Q34 17 35 28z"/><path d="M36 33Q38 20 44 10Q39 20 37 29z"/></svg> Talaria - Project Tracking Dashboard</h1>
+            <h1><svg class="header-icon" viewBox="0 0 64 64" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M58 8C44 10 30 20 22 32c-4 6-7 13-8 20 3-5 7-10 12-14C33 32 42 28 52 27c-8 4-16 10-22 18 8-6 18-12 28-16C52 18 48 10 58 8z"/></svg> Talaria - Project Tracking Dashboard</h1>
             <span class="header-info">Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</span>
         </header>
         
