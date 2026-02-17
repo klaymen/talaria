@@ -360,11 +360,6 @@ def get_css():
         box-shadow: var(--shadow-sm);
         }
 
-        .filters-section h2 {
-        margin-bottom: 20px;
-        color: var(--color-text);
-        }
-
         .filters {
         display: flex;
         flex-wrap: wrap;
@@ -489,7 +484,7 @@ def get_css():
         box-sizing: border-box;
         }
 
-        .chart-container h2 {
+        .chart-container h3 {
         margin-bottom: 20px;
         color: var(--color-text);
         font-size: 1.3em;
@@ -572,11 +567,6 @@ def get_css():
         border-radius: 10px;
         margin-bottom: 30px;
         box-shadow: var(--shadow-sm);
-        }
-
-        .table-section h2 {
-        margin-bottom: 20px;
-        color: var(--color-text);
         }
 
         .table-controls {
@@ -695,11 +685,6 @@ def get_css():
         box-shadow: var(--shadow-sm);
         }
 
-        .project-details-section h2 {
-        margin-bottom: 20px;
-        color: var(--color-text);
-        }
-
         .project-card {
         position: relative;
         margin-bottom: 20px;
@@ -735,6 +720,46 @@ def get_css():
         font-size: 1.3em;
         font-weight: bold;
         color: var(--color-text);
+        }
+
+        /* Collapsible sections */
+        .collapsible-section {
+        margin-bottom: 30px;
+        }
+
+        .collapsible-section > summary {
+        cursor: pointer;
+        list-style: none;
+        user-select: none;
+        }
+
+        .collapsible-section > summary::-webkit-details-marker {
+        display: none;
+        }
+
+        .collapsible-section > summary h2 {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--color-text);
+        padding: 10px 0;
+        }
+
+        .collapsible-section > summary h2::before {
+        content: '\\25BC';
+        font-size: 0.6em;
+        transition: transform 0.2s;
+        color: var(--color-text-muted);
+        }
+
+        .collapsible-section:not([open]) > summary h2::before {
+        transform: rotate(-90deg);
+        }
+
+        .collapsible-section > .filters-section,
+        .collapsible-section > .table-section,
+        .collapsible-section > .project-details-section {
+        margin-bottom: 0;
         }
 
         @media (max-width: 768px) {
