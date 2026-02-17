@@ -36,10 +36,10 @@ A Python tool that reads Excel files containing project tracking data and genera
   - Visible Comment column (truncated with full text on hover)
   - Export filtered data to CSV (includes Sheet and Comment columns)
 - **Project Details**: Detailed financial statistics for each project including:
-  - Status indicators (green/yellow/red) based on forecasted budget
-  - Closure date and EAC (Estimated At Completion)
-  - Coverage ratio (Cost / (Invoiced + Positive Financial Record)) shown next to the project name
-  - Burndown Rate (average monthly cost)
+  - Status indicators (green/yellow/red) with matching card borders
+  - Budget, Total Costs, EAC (highlighted), Cost/Invoiced, Coverage
+  - Missing Coverage/Overcovered, Remaining Budget
+  - Closure date, Burndown Rate, and cost breakdown
 - **Monthly Summary**: Monthly breakdown of Working Time hours and costs
 - **Budget Forecast**: Projects future budget trends based on average monthly costs
 
@@ -96,7 +96,7 @@ The input Excel file can contain **multiple sheets/tabs** — all sheets are rea
 |---|---|
 | **Working Time** | Work hours. Cost = hours × hourly rate × (1 + additional rate). Not entered as Amount. |
 | **PO** | Purchase Order. Adds to the project budget. |
-| **Invoice** | Invoiced amount. Informational only — not a cost. Used for Missing Invoice calculation. |
+| **Invoice** | Invoiced amount. Informational only — not a cost. Used for Missing Coverage / Overcovered calculation. |
 | **Purchase** | Direct cost (e.g. software licenses, hardware). |
 | **T&L** | Travel & Logistics cost. |
 | **Deferment** | Positive: adds to budget and counts as invoiced. Negative: reduces budget. Not a cost. |
@@ -125,11 +125,12 @@ In addition to the Comment column, the dashboard also reads **cell-level Excel c
 
 ### Summary Cards
 - **Cost/Invoiced**: Ratio of total invoices to total costs as a percentage
+- **Coverage**: Cost / (Invoiced + Positive Financial Record) — how much of the covered amount has been spent
 - **Total Projects**: Number of unique projects
 - **Budget**: Total budget from Purchase Orders (adjusted by Deferment and negative Financial Records)
 - **Total Costs**: Working Time + Purchases + T&L
 - **Total Invoices**: Invoice + positive Deferment amounts (positive Financial Records are *not* included in invoices)
-- **Missing Invoice/Overinvoiced**: Total Invoices minus Total Costs
+- **Missing Coverage/Overcovered**: (Invoiced + Positive Financial Record) minus Total Costs. Negative = missing coverage, positive = overcovered
 - **Remaining Budget**: Budget minus Total Costs
 - **Total Hours**: Sum of all hours
 
@@ -158,18 +159,16 @@ In addition to the Comment column, the dashboard also reads **cell-level Excel c
 
 ### Project Details
 - Detailed financial statistics for each project:
-  - Status indicator (green/yellow/red box) based on forecasted budget
-  - Budget
-  - Total Costs (broken down by Working Time, Purchases, T&L)
-  - Invoices
-  - Missing Invoice/Overinvoiced
-  - Closure Date (if project has a Closure event)
-  - EAC (Estimated At Completion — forecasted remaining budget at closure)
+  - Status indicator (green/yellow/red box) with matching left/right card borders
+  - Budget, Total Costs, EAC (highlighted row)
+  - Cost/Invoiced and Coverage ratios (highlighted row)
+  - Invoices, Missing Coverage/Overcovered
   - Remaining Budget (color-coded: green if positive, red if negative)
+  - Working Time / Purchase / T&L cost breakdown
   - Deferment (with color coding)
   - Financial Record (blue if positive, red if negative)
-  - Monthly Cost Forecast Rate
-  - Total Hours
+  - Total Hours, Burndown Rate
+  - Closure Date
 
 ### Monthly Working Time Summary
 - Monthly breakdown of Working Time events:
