@@ -75,7 +75,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     <li><strong>Pagination:</strong> Choose page size (25, 50, 100, 250, or All rows) to control how many records are displayed at once.</li>
                     <li><strong>Sheet Filter:</strong> Filter the table to show records from a specific Excel sheet/tab.</li>
                     <li><strong>Search:</strong> Full-text search across all fields.</li>
-                    <li><strong>Comments:</strong> Records with comments show a blue dot (&bull;) next to the amount. Hover over the row to see the full comment. Comments come from both a dedicated Comment column and cell-level Excel comments (sticky notes).</li>
+                    <li><strong>Comment Column:</strong> A visible column showing comment text (truncated if long; hover to see the full text). Comments come from both a dedicated Comment column and cell-level Excel comments (sticky notes).</li>
                     <li><strong>Export:</strong> Export filtered data to CSV (includes Sheet and Comment columns).</li>
                 </ul>
 
@@ -251,6 +251,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             <th class="sortable" data-sort="additional_rate">Additional Rate</th>
                             <th class="sortable" data-sort="hours">Hours</th>
                             <th class="sortable" data-sort="amount">Amount/Cost</th>
+                            <th class="sortable" data-sort="comment">Comment</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -807,9 +808,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             const pageData = currentTableData.slice(startIdx, endIdx);
 
             pageData.forEach(row => {{
-                const hasComment = row.comment && row.comment.length > 0;
                 const tr = $('<tr>');
-                if (hasComment) tr.addClass('has-comment');
 
                 tr.append($('<td>').text(row.index || ''));
                 tr.append($('<td>').text(row.date || ''));
@@ -827,15 +826,15 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const displayAmount = (row.event_type === 'Working Time' && row.calculated_cost)
                     ? row.calculated_cost
                     : (row.amount || 0);
+                tr.append($('<td>').text(formatEUR(displayAmount)));
 
-                // Last cell: amount + comment tooltip
-                const amountTd = $('<td>').addClass('comment-cell');
-                amountTd.append($('<span>').text(formatEUR(displayAmount)));
-                if (hasComment) {{
-                    amountTd.append($('<span>').addClass('comment-indicator'));
-                    amountTd.append($('<div>').addClass('comment-tooltip').text(row.comment));
+                // Comment column
+                const commentText = row.comment || '';
+                const commentTd = $('<td>').addClass('comment-cell');
+                if (commentText) {{
+                    commentTd.text(commentText).attr('title', commentText);
                 }}
-                tr.append(amountTd);
+                tr.append(commentTd);
                 tbody.append(tr);
             }});
 
@@ -906,43 +905,6 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             currentPage = 1;
             updateSortIndicators();
             renderTablePage();
-        }});
-
-        // Position comment tooltips dynamically so they stay on-screen
-        $(document).on('mouseenter', 'tr.has-comment', function() {{
-            const tooltip = $(this).find('.comment-tooltip');
-            if (!tooltip.length) return;
-
-            // Temporarily show to measure
-            tooltip.css({{ display: 'block', visibility: 'hidden', top: 'auto', bottom: 'auto', left: 'auto' }});
-            tooltip.removeClass('tooltip-above tooltip-below');
-
-            const row = $(this)[0].getBoundingClientRect();
-            const ttHeight = tooltip.outerHeight();
-            const ttWidth = tooltip.outerWidth();
-            const margin = 8;
-
-            // Decide above or below
-            const spaceAbove = row.top;
-            const spaceBelow = window.innerHeight - row.bottom;
-            let top;
-            if (spaceAbove >= ttHeight + margin) {{
-                top = row.top - ttHeight - margin;
-                tooltip.addClass('tooltip-above');
-            }} else {{
-                top = row.bottom + margin;
-                tooltip.addClass('tooltip-below');
-            }}
-
-            // Horizontal: center on the row, but clamp to viewport
-            let left = row.left + (row.width / 2) - (ttWidth / 2);
-            left = Math.max(8, Math.min(left, window.innerWidth - ttWidth - 8));
-
-            tooltip.css({{ top: top + 'px', left: left + 'px', visibility: 'visible' }});
-        }});
-
-        $(document).on('mouseleave', 'tr.has-comment', function() {{
-            $(this).find('.comment-tooltip').css('display', 'none');
         }});
 
         function renderCharts(data) {{

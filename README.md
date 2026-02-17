@@ -33,7 +33,7 @@ A Python tool that reads Excel files containing project tracking data and genera
   - Paginated display (25, 50, 100, 250, or all rows)
   - Sheet filter to show records from specific tabs
   - Full-text search across all fields
-  - Comment tooltips (blue dot indicator on hover)
+  - Visible Comment column (truncated with full text on hover)
   - Export filtered data to CSV (includes Sheet and Comment columns)
 - **Project Details**: Detailed financial statistics for each project including:
   - Status indicators (green/yellow/red) based on forecasted budget
@@ -151,7 +151,7 @@ In addition to the Comment column, the dashboard also reads **cell-level Excel c
 - Paginated display with configurable page size (25, 50, 100, 250, or all)
 - Sheet filter dropdown to show records from a specific Excel tab
 - Full-text search across all fields
-- Comment tooltips: rows with comments show a blue dot indicator; hover to see the full comment
+- Comment column: always visible, truncated with full text shown on hover
 - Sheet column shows which Excel tab each record came from
 - Export to CSV (includes Sheet and Comment columns)
 
