@@ -143,153 +143,169 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         </div>
 
         <!-- Filters -->
-        <div class="filters-section">
-            <h2>Filters</h2>
-            <div class="filters">
-                <div class="filter-group">
-                    <label for="eventTypeFilter">Event Type:</label>
-                    <select id="eventTypeFilter">
-                        <option value="all">All Types</option>
-                        {''.join(f'<option value="{et}">{et}</option>' for et in sorted(event_types))}
-                    </select>
+        <details class="collapsible-section" open>
+            <summary><h2>Filters</h2></summary>
+            <div class="filters-section">
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="eventTypeFilter">Event Type:</label>
+                        <select id="eventTypeFilter">
+                            <option value="all">All Types</option>
+                            {''.join(f'<option value="{et}">{et}</option>' for et in sorted(event_types))}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dateFrom">Date From:</label>
+                        <input type="date" id="dateFrom" value="{date_from}" />
+                    </div>
+                    <div class="filter-group">
+                        <label for="dateTo">Date To:</label>
+                        <input type="date" id="dateTo" value="{date_to}" />
+                    </div>
+                    <button id="clearFilters" class="btn-secondary">Clear Filters</button>
                 </div>
-                <div class="filter-group">
-                    <label for="dateFrom">Date From:</label>
-                    <input type="date" id="dateFrom" value="{date_from}" />
+
+                <!-- Quick Filters -->
+                <div class="quick-filters">
+                    <h3>Quick Filters</h3>
+                    <div class="quick-filter-group">
+                        <label>Projects:</label>
+                        <div class="quick-filter-buttons" id="projectFilters"></div>
+                    </div>
+                    <div class="quick-filter-group">
+                        <label>Financial Years & Quarters:</label>
+                        <div class="quick-filter-buttons" id="financialFilters"></div>
+                    </div>
+                    <div class="quick-filter-group">
+                        <label>Months:</label>
+                        <div class="quick-filter-buttons" id="monthFilters"></div>
+                    </div>
                 </div>
-                <div class="filter-group">
-                    <label for="dateTo">Date To:</label>
-                    <input type="date" id="dateTo" value="{date_to}" />
-                </div>
-                <button id="clearFilters" class="btn-secondary">Clear Filters</button>
             </div>
-            
-            <!-- Quick Filters -->
-            <div class="quick-filters">
-                <h3>Quick Filters</h3>
-                <div class="quick-filter-group">
-                    <label>Projects:</label>
-                    <div class="quick-filter-buttons" id="projectFilters"></div>
-                </div>
-                <div class="quick-filter-group">
-                    <label>Financial Years & Quarters:</label>
-                    <div class="quick-filter-buttons" id="financialFilters"></div>
-                </div>
-                <div class="quick-filter-group">
-                    <label>Months:</label>
-                    <div class="quick-filter-buttons" id="monthFilters"></div>
-                </div>
-            </div>
-        </div>
+        </details>
 
         <!-- Charts Section -->
-        <div class="charts-section">
-            <div class="chart-container">
-                <h2>Amount by Project</h2>
-                <div class="chart-filters" id="projectAmountChartFilters" style="display: none;">
-                    <div class="chart-filter-buttons">
-                        <button type="button" class="chart-filter-btn" id="projectAmountChartSelectAll">All</button>
-                        <button type="button" class="chart-filter-btn" id="projectAmountChartSelectNone">None</button>
+        <details class="collapsible-section" open>
+            <summary><h2>Charts</h2></summary>
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h3>Amount by Project</h3>
+                    <div class="chart-filters" id="projectAmountChartFilters" style="display: none;">
+                        <div class="chart-filter-buttons">
+                            <button type="button" class="chart-filter-btn" id="projectAmountChartSelectAll">All</button>
+                            <button type="button" class="chart-filter-btn" id="projectAmountChartSelectNone">None</button>
+                        </div>
+                        <div class="chart-filter-checkboxes">
+                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="0" checked> PO Coverage</label>
+                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="1" checked> Costs</label>
+                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="2" checked> Invoices</label>
+                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="3" checked> Deferment</label>
+                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="4" checked> Remaining Budget</label>
+                        </div>
                     </div>
-                    <div class="chart-filter-checkboxes">
-                        <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="0" checked> PO Coverage</label>
-                        <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="1" checked> Costs</label>
-                        <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="2" checked> Invoices</label>
-                        <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="3" checked> Deferment</label>
-                        <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="4" checked> Remaining Budget</label>
-                    </div>
+                    <canvas id="projectAmountChart"></canvas>
+                    <div class="chart-placeholder" id="projectAmountChartPlaceholder">No data available for this chart</div>
                 </div>
-                <canvas id="projectAmountChart"></canvas>
-                <div class="chart-placeholder" id="projectAmountChartPlaceholder">No data available for this chart</div>
+                <div class="chart-container">
+                    <h3>Hours by Project</h3>
+                    <canvas id="projectHoursChart"></canvas>
+                    <div class="chart-placeholder" id="projectHoursChartPlaceholder">No data available for this chart</div>
+                </div>
+                <div class="chart-container">
+                    <h3>Hours by Month</h3>
+                    <canvas id="monthlyHoursChart"></canvas>
+                    <div class="chart-placeholder" id="monthlyHoursChartPlaceholder">No data available for this chart</div>
+                </div>
+                <div class="chart-container">
+                    <h3>Timeline</h3>
+                    <canvas id="timelineChart"></canvas>
+                    <div class="chart-placeholder" id="timelineChartPlaceholder">No data available for this chart</div>
+                </div>
+                <div class="chart-container">
+                    <h3>Budget Forecast</h3>
+                    <canvas id="forecastChart"></canvas>
+                    <div class="chart-placeholder" id="forecastChartPlaceholder">No data available for this chart</div>
+                </div>
             </div>
-            <div class="chart-container">
-                <h2>Hours by Project</h2>
-                <canvas id="projectHoursChart"></canvas>
-                <div class="chart-placeholder" id="projectHoursChartPlaceholder">No data available for this chart</div>
-            </div>
-            <div class="chart-container">
-                <h2>Timeline</h2>
-                <canvas id="timelineChart"></canvas>
-                <div class="chart-placeholder" id="timelineChartPlaceholder">No data available for this chart</div>
-            </div>
-            <div class="chart-container">
-                <h2>Budget Forecast</h2>
-                <canvas id="forecastChart"></canvas>
-                <div class="chart-placeholder" id="forecastChartPlaceholder">No data available for this chart</div>
-            </div>
-        </div>
+        </details>
 
         <!-- Data Table -->
-        <div class="table-section">
-            <h2>Data Table <span id="tableRecordCount" style="font-size: 0.7em; color: var(--color-text-muted); font-weight: normal;"></span></h2>
-            <div class="table-controls">
-                <input type="text" id="searchInput" placeholder="Search..." />
-                <select id="tableEventTypeFilter" style="padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.95em; background: var(--color-surface); color: var(--color-text);">
-                    <option value="all">All Types</option>
-                </select>
-                <select id="tableSheetFilter" style="padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.95em; background: var(--color-surface); color: var(--color-text);">
-                    <option value="all">All Sheets</option>
-                </select>
-                <select id="tablePageSize" style="padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.95em; background: var(--color-surface); color: var(--color-text);">
-                    <option value="25">25 rows</option>
-                    <option value="50" selected>50 rows</option>
-                    <option value="100">100 rows</option>
-                    <option value="250">250 rows</option>
-                    <option value="all">All rows</option>
-                </select>
-                <button id="exportBtn" class="btn-primary">Export to CSV</button>
+        <details class="collapsible-section" open>
+            <summary><h2>Data Table <span id="tableRecordCount" style="font-size: 0.7em; color: var(--color-text-muted); font-weight: normal;"></span></h2></summary>
+            <div class="table-section">
+                <div class="table-controls">
+                    <input type="text" id="searchInput" placeholder="Search..." />
+                    <select id="tableEventTypeFilter" style="padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.95em; background: var(--color-surface); color: var(--color-text);">
+                        <option value="all">All Types</option>
+                    </select>
+                    <select id="tableSheetFilter" style="padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.95em; background: var(--color-surface); color: var(--color-text);">
+                        <option value="all">All Sheets</option>
+                    </select>
+                    <select id="tablePageSize" style="padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.95em; background: var(--color-surface); color: var(--color-text);">
+                        <option value="25">25 rows</option>
+                        <option value="50" selected>50 rows</option>
+                        <option value="100">100 rows</option>
+                        <option value="250">250 rows</option>
+                        <option value="all">All rows</option>
+                    </select>
+                    <button id="exportBtn" class="btn-primary">Export to CSV</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="index">#</th>
+                                <th class="sortable" data-sort="date">Date</th>
+                                <th class="sortable" data-sort="event_type">Event Type</th>
+                                <th class="sortable" data-sort="project">Project</th>
+                                <th class="sortable" data-sort="sheet">Sheet</th>
+                                <th class="sortable" data-sort="hourly_rate">Hourly Rate</th>
+                                <th class="sortable" data-sort="additional_rate">Additional Rate</th>
+                                <th class="sortable" data-sort="hours">Hours</th>
+                                <th class="sortable" data-sort="amount">Amount/Cost</th>
+                                <th class="sortable" data-sort="comment">Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-pagination" id="tablePagination">
+                    <button class="btn-secondary btn-sm" id="prevPage" disabled>&laquo; Previous</button>
+                    <span id="pageInfo" style="padding: 6px 12px; color: var(--color-text-secondary);"></span>
+                    <button class="btn-secondary btn-sm" id="nextPage">&raquo; Next</button>
+                </div>
             </div>
-            <div class="table-wrapper">
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <th class="sortable" data-sort="index">#</th>
-                            <th class="sortable" data-sort="date">Date</th>
-                            <th class="sortable" data-sort="event_type">Event Type</th>
-                            <th class="sortable" data-sort="project">Project</th>
-                            <th class="sortable" data-sort="sheet">Sheet</th>
-                            <th class="sortable" data-sort="hourly_rate">Hourly Rate</th>
-                            <th class="sortable" data-sort="additional_rate">Additional Rate</th>
-                            <th class="sortable" data-sort="hours">Hours</th>
-                            <th class="sortable" data-sort="amount">Amount/Cost</th>
-                            <th class="sortable" data-sort="comment">Comment</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                    </tbody>
-                </table>
-            </div>
-            <div class="table-pagination" id="tablePagination">
-                <button class="btn-secondary btn-sm" id="prevPage" disabled>&laquo; Previous</button>
-                <span id="pageInfo" style="padding: 6px 12px; color: var(--color-text-secondary);"></span>
-                <button class="btn-secondary btn-sm" id="nextPage">&raquo; Next</button>
-            </div>
-        </div>
+        </details>
 
         <!-- Monthly Working Time Summary -->
-        <div class="table-section">
-            <h2>Monthly Working Time Summary</h2>
-            <div class="table-wrapper">
-                <table id="monthlySummaryTable">
-                    <thead>
-                        <tr>
-                            <th>Month</th>
-                            <th>Total Hours</th>
-                            <th>Total Cost</th>
-                            <th>Projects</th>
-                        </tr>
-                    </thead>
-                    <tbody id="monthlySummaryBody">
-                    </tbody>
-                </table>
+        <details class="collapsible-section" open>
+            <summary><h2>Monthly Working Time Summary</h2></summary>
+            <div class="table-section">
+                <div class="table-wrapper">
+                    <table id="monthlySummaryTable">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Total Hours</th>
+                                <th>Total Cost</th>
+                                <th>Projects</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthlySummaryBody">
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        </details>
 
         <!-- Project Details -->
-        <div class="project-details-section">
-            <h2>Project Details</h2>
-            <div id="projectDetails"></div>
-        </div>
+        <details class="collapsible-section" open>
+            <summary><h2>Project Details</h2></summary>
+            <div class="project-details-section">
+                <div id="projectDetails"></div>
+            </div>
+        </details>
         
     </div>
 
@@ -1042,12 +1058,24 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }}
             }});
             
+            // Aggregate hours by month
+            const monthlyHours = {{}};
+            data.forEach(row => {{
+                if (row.hours && row.date && row.date.length >= 7) {{
+                    const month = row.date.substring(0, 7);
+                    monthlyHours[month] = (monthlyHours[month] || 0) + row.hours;
+                }}
+            }});
+
             // Destroy existing charts
             if (window.projectFinancialChart && typeof window.projectFinancialChart.destroy === 'function') {{
                 window.projectFinancialChart.destroy();
             }}
             if (window.projectHoursChart && typeof window.projectHoursChart.destroy === 'function') {{
                 window.projectHoursChart.destroy();
+            }}
+            if (window.monthlyHoursChart && typeof window.monthlyHoursChart.destroy === 'function') {{
+                window.monthlyHoursChart.destroy();
             }}
             if (window.timelineChart && typeof window.timelineChart.destroy === 'function') {{
                 window.timelineChart.destroy();
@@ -1057,7 +1085,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             }}
             
             // Financials by Project Chart (PO Coverage, Costs, Invoices, Deferment)
-            const allProjects = [...new Set([...Object.keys(projectPOCoverage), ...Object.keys(projectCosts), ...Object.keys(projectInvoices), ...Object.keys(projectDeferment)])];
+            const allProjects = [...new Set([...Object.keys(projectPOCoverage), ...Object.keys(projectCosts), ...Object.keys(projectInvoices), ...Object.keys(projectDeferment)])].sort();
             
             // Show/hide placeholder
             if (allProjects.length === 0) {{
@@ -1197,7 +1225,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             }}
             
             // Hours by Project Chart
-            const hoursProjects = Object.keys(projectHours);
+            const hoursProjects = Object.keys(projectHours).sort();
             
             // Show/hide placeholder
             if (hoursProjects.length === 0) {{
@@ -1232,7 +1260,43 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     }}
                 }});
             }}
-            
+
+            // Hours by Month Chart
+            const hoursMonths = Object.keys(monthlyHours).sort();
+
+            if (hoursMonths.length === 0) {{
+                $('#monthlyHoursChartPlaceholder').addClass('show');
+            }} else {{
+                $('#monthlyHoursChartPlaceholder').removeClass('show');
+            }}
+
+            if (hoursMonths.length > 0) {{
+                const ctx3 = document.getElementById('monthlyHoursChart').getContext('2d');
+                const cc3 = getChartColors();
+                window.monthlyHoursChart = new Chart(ctx3, {{
+                    type: 'bar',
+                    data: {{
+                        labels: hoursMonths,
+                        datasets: [{{
+                            label: 'Hours',
+                            data: hoursMonths.map(m => monthlyHours[m]),
+                            backgroundColor: cc3.hours + '99',
+                            borderColor: cc3.hours,
+                            borderWidth: 1
+                        }}]
+                    }},
+                    options: {{
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {{
+                            y: {{
+                                beginAtZero: true
+                            }}
+                        }}
+                    }}
+                }});
+            }}
+
             // Timeline Chart: Monthly Costs and Remaining Budget
             const allMonths = [...new Set([...Object.keys(monthlyCosts), ...Object.keys(monthlyPOCoverage)])].sort();
             
