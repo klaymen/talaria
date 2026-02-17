@@ -26,7 +26,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 <body>
     <div class="container">
         <header>
-            <h1>Talaria - Project Tracking Dashboard</h1>
+            <h1><svg class="header-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 22c2-1 5-2.5 8-2.5s6 1.5 8 2.5c1.5.7 3 1 4 .5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 20c1-3 3-6 6-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M20 13c-1.5-1-3.5-1.5-6-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4 18l-2-4 4-.5M4 18l-3-1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20l-4-2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Talaria - Project Tracking Dashboard</h1>
             <span class="header-info">Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</span>
         </header>
         
@@ -129,9 +129,9 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             <div class="summary-card">
                 <h3>Project Status</h3>
                 <div class="project-status-counts">
-                    <span class="status-count green" id="greenProjectCount">0</span>
-                    <span class="status-count yellow" id="yellowProjectCount">0</span>
-                    <span class="status-count red" id="redProjectCount">0</span>
+                    <span class="status-count-item green" id="greenProjectItem"><span class="status-count-num" id="greenProjectCount">0</span> <span class="status-count-label">Green</span></span>
+                    <span class="status-count-item yellow" id="yellowProjectItem"><span class="status-count-num" id="yellowProjectCount">0</span> <span class="status-count-label">Yellow</span></span>
+                    <span class="status-count-item red" id="redProjectItem"><span class="status-count-num" id="redProjectCount">0</span> <span class="status-count-label">Red</span></span>
                 </div>
             </div>
             <div class="summary-card">
@@ -2518,6 +2518,9 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             $('#greenProjectCount').text(greenCount);
             $('#yellowProjectCount').text(yellowCount);
             $('#redProjectCount').text(redCount);
+            $('#greenProjectItem').toggle(greenCount > 0);
+            $('#yellowProjectItem').toggle(yellowCount > 0);
+            $('#redProjectItem').toggle(redCount > 0);
         }}
 
         function exportToCSV() {{

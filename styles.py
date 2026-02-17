@@ -130,6 +130,15 @@ def get_css():
         header h1 {
         font-size: 1.8em;
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        }
+
+        .header-icon {
+        width: 1.2em;
+        height: 1.2em;
+        flex-shrink: 0;
         }
 
         header .header-info {
@@ -349,25 +358,29 @@ def get_css():
         .project-status-counts {
         display: flex;
         justify-content: center;
-        gap: 16px;
+        gap: 10px;
         }
 
-        .status-count {
-        font-size: 2em;
+        .status-count-item {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 3px;
+        }
+
+        .status-count-num {
+        font-size: 1.5em;
         font-weight: bold;
         }
 
-        .status-count.green {
-        color: var(--color-positive);
+        .status-count-label {
+        font-size: 0.75em;
+        font-weight: 600;
+        opacity: 0.85;
         }
 
-        .status-count.yellow {
-        color: var(--color-warning);
-        }
-
-        .status-count.red {
-        color: var(--color-negative);
-        }
+        .status-count-item.green { color: var(--color-positive); }
+        .status-count-item.yellow { color: var(--color-warning); }
+        .status-count-item.red { color: var(--color-negative); }
 
         .filters-section {
         background: var(--color-surface);
