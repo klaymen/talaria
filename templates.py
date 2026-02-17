@@ -192,9 +192,19 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
         <!-- Data Table -->
         <div class="table-section">
-            <h2>Data Table</h2>
+            <h2>Data Table <span id="tableRecordCount" style="font-size: 0.7em; color: #888; font-weight: normal;"></span></h2>
             <div class="table-controls">
                 <input type="text" id="searchInput" placeholder="Search..." />
+                <select id="tableSheetFilter" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95em;">
+                    <option value="all">All Sheets</option>
+                </select>
+                <select id="tablePageSize" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95em;">
+                    <option value="25">25 rows</option>
+                    <option value="50" selected>50 rows</option>
+                    <option value="100">100 rows</option>
+                    <option value="250">250 rows</option>
+                    <option value="all">All rows</option>
+                </select>
                 <button id="exportBtn" class="btn-primary">Export to CSV</button>
             </div>
             <div class="table-wrapper">
@@ -205,6 +215,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             <th>Date</th>
                             <th>Event Type</th>
                             <th>Project</th>
+                            <th>Sheet</th>
                             <th>Hourly Rate</th>
                             <th>Additional Rate</th>
                             <th>Hours</th>
@@ -214,6 +225,11 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     <tbody id="tableBody">
                     </tbody>
                 </table>
+            </div>
+            <div class="table-pagination" id="tablePagination">
+                <button class="btn-secondary btn-sm" id="prevPage" disabled>&laquo; Previous</button>
+                <span id="pageInfo" style="padding: 6px 12px; color: #555;"></span>
+                <button class="btn-secondary btn-sm" id="nextPage">&raquo; Next</button>
             </div>
         </div>
 
@@ -281,6 +297,12 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 $('#dateTo').val(dates[dates.length - 1]);
             }}
             
+            // Populate sheet filter dropdown
+            const sheets = [...new Set(allData.map(r => r.sheet).filter(Boolean))].sort();
+            sheets.forEach(s => {{
+                $('#tableSheetFilter').append($('<option>').val(s).text(s));
+            }});
+
             renderTable(allData);
             renderCharts(allData);
             renderProjectDetails(allData);
@@ -290,19 +312,46 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             // Filter handlers
             $('#eventTypeFilter, #dateFrom, #dateTo').on('change', applyFilters);
             $('#clearFilters').on('click', clearFilters);
-            
+
             // Initialize quick filters
             initializeQuickFilters();
-            $('#searchInput').on('keyup', function() {{
-                const searchTerm = $(this).val().toLowerCase();
-                const filtered = filteredData.filter(row => {{
-                    return Object.values(row).some(val => 
-                        String(val).toLowerCase().includes(searchTerm)
-                    );
-                }});
-                renderTable(filtered);
+
+            // Table search — also respects sheet filter
+            function applyTableFilters() {{
+                const searchTerm = $('#searchInput').val().toLowerCase();
+                const sheetFilter = $('#tableSheetFilter').val();
+                let tableData = filteredData;
+                if (sheetFilter !== 'all') {{
+                    tableData = tableData.filter(row => row.sheet === sheetFilter);
+                }}
+                if (searchTerm) {{
+                    tableData = tableData.filter(row => {{
+                        return Object.values(row).some(val =>
+                            String(val).toLowerCase().includes(searchTerm)
+                        );
+                    }});
+                }}
+                renderTable(tableData);
+            }}
+            $('#searchInput').on('keyup', applyTableFilters);
+            $('#tableSheetFilter').on('change', applyTableFilters);
+
+            // Pagination controls
+            $('#prevPage').on('click', function() {{
+                if (currentPage > 1) {{
+                    currentPage--;
+                    renderTablePage();
+                }}
             }});
-            
+            $('#nextPage').on('click', function() {{
+                currentPage++;
+                renderTablePage();
+            }});
+            $('#tablePageSize').on('change', function() {{
+                currentPage = 1;
+                renderTablePage();
+            }});
+
             $('#exportBtn').on('click', exportToCSV);
         }});
         
@@ -690,26 +739,40 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             $('#totalHours').text(totalHours.toLocaleString('en-US', {{minimumFractionDigits: 2, maximumFractionDigits: 2}}));
         }}
         
-        function renderTable(data) {{
+        // Table pagination state
+        let currentTableData = [];
+        let currentPage = 1;
+
+        function getPageSize() {{
+            const val = $('#tablePageSize').val();
+            return val === 'all' ? Infinity : parseInt(val);
+        }}
+
+        function renderTablePage() {{
             const tbody = $('#tableBody');
             tbody.empty();
-            
-            // Sort by date (ascending)
-            const sortedData = [...data].sort((a, b) => {{
-                const dateA = a.date || '';
-                const dateB = b.date || '';
-                return dateA.localeCompare(dateB);
-            }});
-            
-            sortedData.forEach(row => {{
+
+            const pageSize = getPageSize();
+            const totalRows = currentTableData.length;
+            const totalPages = pageSize === Infinity ? 1 : Math.max(1, Math.ceil(totalRows / pageSize));
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIdx = pageSize === Infinity ? 0 : (currentPage - 1) * pageSize;
+            const endIdx = pageSize === Infinity ? totalRows : Math.min(startIdx + pageSize, totalRows);
+            const pageData = currentTableData.slice(startIdx, endIdx);
+
+            pageData.forEach(row => {{
+                const hasComment = row.comment && row.comment.length > 0;
                 const tr = $('<tr>');
+                if (hasComment) tr.addClass('has-comment');
+
                 tr.append($('<td>').text(row.index || ''));
                 tr.append($('<td>').text(row.date || ''));
                 tr.append($('<td>').text(row.event_type || ''));
                 tr.append($('<td>').text(row.project || ''));
+                tr.append($('<td>').text(row.sheet || ''));
                 tr.append($('<td>').text(formatEUR(row.hourly_rate)));
-                // Display additional_rate as percentage (multiply by 100 if it's in decimal format)
-                // For values >= 100, remove decimals
                 let additionalRateDisplay = '';
                 if (row.additional_rate !== null && row.additional_rate !== undefined) {{
                     const percentage = row.additional_rate * 100;
@@ -717,13 +780,44 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }}
                 tr.append($('<td>').text(additionalRateDisplay));
                 tr.append($('<td>').text(row.hours ? row.hours.toFixed(2) : ''));
-                // Show calculated cost for Working Time, otherwise show amount
-                const displayAmount = (row.event_type === 'Working Time' && row.calculated_cost) 
-                    ? row.calculated_cost 
+                const displayAmount = (row.event_type === 'Working Time' && row.calculated_cost)
+                    ? row.calculated_cost
                     : (row.amount || 0);
-                tr.append($('<td>').text(formatEUR(displayAmount)));
+
+                // Last cell: amount + comment tooltip
+                const amountTd = $('<td>').addClass('comment-cell');
+                amountTd.append($('<span>').text(formatEUR(displayAmount)));
+                if (hasComment) {{
+                    amountTd.append($('<span>').addClass('comment-indicator').attr('title', row.comment));
+                    amountTd.append($('<div>').addClass('comment-tooltip').text(row.comment));
+                }}
+                tr.append(amountTd);
                 tbody.append(tr);
             }});
+
+            // Update pagination controls
+            $('#prevPage').prop('disabled', currentPage <= 1);
+            $('#nextPage').prop('disabled', currentPage >= totalPages);
+            $('#pageInfo').text(totalRows === 0 ? 'No records' : `Page ${{currentPage}} of ${{totalPages}} (${{totalRows}} records)`);
+            $('#tableRecordCount').text(`(${{totalRows}} records)`);
+
+            // Show/hide pagination when all rows shown
+            if (pageSize === Infinity || totalPages <= 1) {{
+                $('#tablePagination').hide();
+            }} else {{
+                $('#tablePagination').show();
+            }}
+        }}
+
+        function renderTable(data) {{
+            // Sort by date (ascending)
+            currentTableData = [...data].sort((a, b) => {{
+                const dateA = a.date || '';
+                const dateB = b.date || '';
+                return dateA.localeCompare(dateB);
+            }});
+            currentPage = 1;
+            renderTablePage();
         }}
         
         function renderCharts(data) {{
@@ -2138,16 +2232,17 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         }}
         
         function exportToCSV() {{
-            const headers = ['#', 'Date', 'Event Type', 'Project', 'Hourly Rate', 'Additional Rate', 'Hours', 'Amount', 'Calculated Cost'];
+            const headers = ['#', 'Date', 'Event Type', 'Project', 'Sheet', 'Hourly Rate', 'Additional Rate', 'Hours', 'Amount', 'Calculated Cost', 'Comment'];
             const rows = filteredData.map(row => {{
-                const displayAmount = (row.event_type === 'Working Time' && row.calculated_cost) 
-                    ? row.calculated_cost 
+                const displayAmount = (row.event_type === 'Working Time' && row.calculated_cost)
+                    ? row.calculated_cost
                     : (row.amount || '');
                 return [
                     row.index || '',
                     row.date || '',
                     row.event_type || '',
                     row.project || '',
+                    row.sheet || '',
                     formatEUR(row.hourly_rate).replace('€', '') || '',
                     (() => {{
                         if (row.additional_rate !== null && row.additional_rate !== undefined) {{
@@ -2158,7 +2253,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     }})(),
                     row.hours || '',
                     formatEUR(displayAmount).replace('€', '') || '',
-                    (row.event_type === 'Working Time' && row.calculated_cost) ? formatEUR(row.calculated_cost).replace('€', '') : ''
+                    (row.event_type === 'Working Time' && row.calculated_cost) ? formatEUR(row.calculated_cost).replace('€', '') : '',
+                    (row.comment || '').replace(/"/g, '""')
                 ];
             }});
             
