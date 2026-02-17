@@ -26,7 +26,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 <body>
     <div class="container">
         <header>
-            <h1><svg class="header-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 22c2-1 5-2.5 8-2.5s6 1.5 8 2.5c1.5.7 3 1 4 .5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 20c1-3 3-6 6-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M20 13c-1.5-1-3.5-1.5-6-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4 18l-2-4 4-.5M4 18l-3-1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20l-4-2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Talaria - Project Tracking Dashboard</h1>
+            <h1><svg class="header-icon" viewBox="0 0 64 64" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><!-- sole --><path d="M8 52c0 0 4 4 20 4s28-4 28-4l2 4c0 0-12 6-30 6S4 56 4 56z"/><!-- sandal body --><path d="M10 50c2-6 8-12 14-14l4-1c4 0 8 1 12 3 4 2 7 5 8 8l1 4c-6 2-16 3-24 3-8 0-14-1-15-3z" opacity="0.85"/><!-- ankle strap --><path d="M30 36c-2-4-1-8 1-12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/><!-- wing feathers --><path d="M28 34Q20 28 14 16Q18 22 26 30z"/><path d="M30 32Q24 24 22 10Q24 20 30 28z"/><path d="M32 31Q28 20 30 5Q30 18 33 27z"/><path d="M34 31Q33 18 38 4Q34 17 35 28z"/><path d="M36 33Q38 20 44 10Q39 20 37 29z"/></svg> Talaria - Project Tracking Dashboard</h1>
             <span class="header-info">Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</span>
         </header>
         
@@ -68,7 +68,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <p><strong>Coverage:</strong> Shown next to each project name. Calculated as <em>Total Costs / (Invoiced + Positive Financial Record)</em>. This ratio indicates how much of the invoiced-or-planned amount has actually been spent. Positive Financial Records represent amounts that are expected to be invoiced in the future, so they widen the denominator without affecting costs or the invoice totals.</p>
 
                 <h3>Charts</h3>
-                <p><strong>Amount by Project:</strong> Shows Budget, Costs, Invoices, Deferment, and Remaining Budget grouped by project.</p>
+                <p><strong>Amount by Project:</strong> Shows Budget, Costs, Invoices, Deferment, Financial Record, and Remaining Budget grouped by project.</p>
                 <p><strong>Timeline:</strong> Monthly costs and cumulative remaining budget over time.</p>
                 <p><strong>Monthly Working Time Summary:</strong> Aggregated hours and costs by month.</p>
                 <p><strong>Budget Forecast:</strong> Projects future budget trends based on average monthly costs from the last 2 months. Green = positive forecast, orange = negative.</p>
@@ -218,7 +218,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="1" checked> Costs</label>
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="2" checked> Invoices</label>
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="3" checked> Deferment</label>
-                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="4" checked> Remaining Budget</label>
+                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="4" checked> Financial Record</label>
+                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="5" checked> Remaining Budget</label>
                         </div>
                     </div>
                     <canvas id="projectAmountChart"></canvas>
@@ -341,6 +342,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 deferment: style.getPropertyValue('--chart-deferment').trim(),
                 budget: style.getPropertyValue('--chart-budget').trim(),
                 hours: style.getPropertyValue('--chart-hours').trim(),
+                financialRecord: style.getPropertyValue('--chart-financial-record').trim(),
                 forecastNeg: style.getPropertyValue('--chart-forecast-neg').trim(),
                 positive: style.getPropertyValue('--color-positive').trim(),
                 negative: style.getPropertyValue('--color-negative').trim(),
@@ -1013,6 +1015,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             const projectCosts = {{}};
             const projectInvoices = {{}};
             const projectDeferment = {{}};
+            const projectFinancialRecord = {{}};
             const projectHours = {{}};
             
             // Timeline data: monthly costs and remaining budget
@@ -1045,6 +1048,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
                 // Financial Record: negative reduces PO coverage; positive is used for Coverage ratio only
                 if (eventType === 'Financial Record' && amount) {{
+                    projectFinancialRecord[project] = (projectFinancialRecord[project] || 0) + amount;
                     if (amount < 0) {{
                         projectPOCoverage[project] = (projectPOCoverage[project] || 0) + amount;
                     }}
@@ -1125,7 +1129,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             }}
             
             // Financials by Project Chart (PO Coverage, Costs, Invoices, Deferment)
-            const allProjects = [...new Set([...Object.keys(projectPOCoverage), ...Object.keys(projectCosts), ...Object.keys(projectInvoices), ...Object.keys(projectDeferment)])].sort();
+            const allProjects = [...new Set([...Object.keys(projectPOCoverage), ...Object.keys(projectCosts), ...Object.keys(projectInvoices), ...Object.keys(projectDeferment), ...Object.keys(projectFinancialRecord)])].sort();
             
             // Show/hide placeholder
             if (allProjects.length === 0) {{
@@ -1190,12 +1194,20 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             hidden: !checkboxStates[3]
                         }},
                         {{
+                            label: 'Financial Record (€)',
+                            data: allProjects.map(p => projectFinancialRecord[p] || 0),
+                            backgroundColor: cc1.financialRecord + '99',
+                            borderColor: cc1.financialRecord,
+                            borderWidth: 1,
+                            hidden: !checkboxStates[4]
+                        }},
+                        {{
                             label: 'Remaining Budget (€)',
                             data: allProjects.map(p => (projectPOCoverage[p] || 0) - (projectCosts[p] || 0)),
                             backgroundColor: cc1.budget + '99',
                             borderColor: cc1.budget,
                             borderWidth: 1,
-                            hidden: !checkboxStates[4]
+                            hidden: !checkboxStates[5]
                         }}
                     ]
                 }},

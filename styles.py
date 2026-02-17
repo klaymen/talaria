@@ -52,6 +52,7 @@ def get_css():
         --chart-deferment: #6b7280;
         --chart-budget: #8b6914;
         --chart-hours: #5b4a9e;
+        --chart-financial-record: #1a8fa8;
         --chart-forecast-neg: #c75b2a;
         }
 
@@ -92,6 +93,7 @@ def get_css():
         --chart-deferment: #8b9099;
         --chart-budget: #d4a94c;
         --chart-hours: #9484c4;
+        --chart-financial-record: #4dbfd4;
         --chart-forecast-neg: #d48050;
         }
 
