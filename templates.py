@@ -830,10 +830,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
                 // Comment column
                 const commentText = row.comment || '';
-                const commentTd = $('<td>').addClass('comment-cell');
-                if (commentText) {{
-                    commentTd.text(commentText).attr('title', commentText);
-                }}
+                const commentTd = $('<td>').addClass('comment-cell').text(commentText);
                 tr.append(commentTd);
                 tbody.append(tr);
             }});
