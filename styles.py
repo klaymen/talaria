@@ -686,6 +686,22 @@ def get_css():
         background: var(--color-surface-alt);
         border-radius: 8px;
         border-left: 4px solid var(--color-primary);
+        border-right: 4px solid var(--color-primary);
+        }
+
+        .project-card.status-green {
+        border-left-color: var(--color-positive);
+        border-right-color: var(--color-positive);
+        }
+
+        .project-card.status-yellow {
+        border-left-color: var(--color-warning);
+        border-right-color: var(--color-warning);
+        }
+
+        .project-card.status-red {
+        border-left-color: var(--color-negative);
+        border-right-color: var(--color-negative);
         }
 
         .project-card h3 {

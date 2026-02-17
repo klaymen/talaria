@@ -50,7 +50,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     <li><strong>Working Time:</strong> A cost. Calculated as hours &times; hourly rate &times; (1 + additional rate). The calculated cost is shown instead of the Amount field.</li>
                     <li><strong>Purchase:</strong> A direct cost (e.g. software licenses, hardware).</li>
                     <li><strong>T&amp;L:</strong> Travel &amp; Logistics costs.</li>
-                    <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a cost, not added to the budget. Used for the Missing Invoice / Overinvoiced calculation.</li>
+                    <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a cost, not added to the budget. Used for the Missing Coverage / Overcovered calculation.</li>
                     <li><strong>Deferment:</strong> Positive deferment adds to the budget and counts as invoiced. Negative deferment reduces the budget. Not included in costs.</li>
                     <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage calculation (Cost&nbsp;/&nbsp;(Invoiced&nbsp;+&nbsp;Positive&nbsp;Financial&nbsp;Record)) but are <em>not</em> counted as invoiced. Negative amounts reduce the budget. Not included in costs.</li>
                     <li><strong>Closure:</strong> Marks the project end date. The budget forecast extends to the closure month.</li>
@@ -62,7 +62,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <p><strong>Budget:</strong> Total Purchase Order coverage across all projects (includes positive Deferment and is reduced by negative Deferment and negative Financial Records).</p>
                 <p><strong>Total Costs:</strong> Sum of Working Time + Purchases + T&amp;L. Deferment and Financial Record are not costs.</p>
                 <p><strong>Total Invoices:</strong> Total invoiced amounts (includes Invoice events and positive Deferment). Positive Financial Records are <em>not</em> counted as invoiced.</p>
-                <p><strong>Missing Invoice/Overinvoiced:</strong> Total Invoices minus Total Costs. Negative (red) = missing invoices; positive = overinvoiced.</p>
+                <p><strong>Missing Coverage/Overcovered:</strong> (Invoiced + Positive Financial Record) minus Total Costs. Negative (red) = missing coverage; positive = overcovered.</p>
                 <p><strong>Remaining Budget:</strong> Budget minus Total Costs.</p>
                 <p><strong>Coverage:</strong> Shown next to each project name. Calculated as <em>Total Costs / (Invoiced + Positive Financial Record)</em>. This ratio indicates how much of the invoiced-or-planned amount has actually been spent. Positive Financial Records represent amounts that are expected to be invoiced in the future, so they widen the denominator without affecting costs or the invoice totals.</p>
 
@@ -92,7 +92,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     <li><strong>Closure Date:</strong> Project end date (from Closure events)</li>
                     <li><strong>EAC (Estimated At Completion):</strong> Forecasted remaining budget at closure</li>
                     <li><strong>Invoices:</strong> Total invoiced amounts</li>
-                    <li><strong>Missing Invoice/Overinvoiced:</strong> Total Invoices minus Total Costs</li>
+                    <li><strong>Missing Coverage/Overcovered:</strong> (Invoiced + Positive Financial Record) minus Total Costs</li>
                     <li><strong>Remaining Budget:</strong> Current budget status (green if positive, red if negative)</li>
                     <li><strong>Working Time / Purchase / T&amp;L Costs:</strong> Breakdown by cost type</li>
                     <li><strong>Deferment:</strong> Positive adds to the budget and counts as invoiced. Negative reduces the budget. Not a cost.</li>
@@ -138,7 +138,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <div class="summary-value" id="totalInvoices">€{total_invoices:,.2f}</div>
             </div>
             <div class="summary-card">
-                <h3 id="missingInvoiceLabel">Missing Invoice/Overinvoiced</h3>
+                <h3 id="missingInvoiceLabel">Missing Coverage/Overcovered</h3>
                 <div class="summary-value" id="missingInvoice">€{total_invoices - total_costs:,.2f}</div>
             </div>
             <div class="summary-card">
@@ -824,9 +824,9 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             const totalCosts = workingTimeCosts + purchaseCosts + tlCosts;
             // Remaining budget = PO Coverage - Total Costs (invoices are informational only)
             const remainingBudget = poCoverage - totalCosts;
-            // Missing Invoice = Total Invoices - Total Costs
-            // Negative = missing invoices (not enough invoiced), Positive = overinvoiced
-            const missingInvoice = invoices - totalCosts;
+            // Coverage gap = (Invoiced + Positive Financial Record) - Total Costs
+            // Negative = missing coverage, Positive = overcovered
+            const coverageGap = (invoices + positiveFinancialRecord) - totalCosts;
             
             // Calculate Invoiced/Cost ratio as percentage
             let invoicedCostRatio = '-';
@@ -852,25 +852,25 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             $('#totalPOCoverage').text(formatEUR(poCoverage));
             $('#totalCosts').text(formatEUR(totalCosts));
             $('#totalInvoices').text(formatEUR(invoices));
-            // Update Missing Invoice/Overinvoiced display
-            const missingInvoiceElement = $('#missingInvoice');
-            const missingInvoiceLabelElement = $('#missingInvoiceLabel');
-            
-            if (Math.abs(missingInvoice) < 0.01) {{
+            // Update Missing Coverage/Overcovered display
+            const coverageGapElement = $('#missingInvoice');
+            const coverageGapLabelElement = $('#missingInvoiceLabel');
+
+            if (Math.abs(coverageGap) < 0.01) {{
                 // Zero or very close to zero - show checkmark
-                missingInvoiceLabelElement.text('Balanced');
-                missingInvoiceElement.text('✓');
-                missingInvoiceElement.css('color', 'var(--color-positive)');
-            }} else if (missingInvoice < 0) {{
-                // Negative - missing invoices
-                missingInvoiceLabelElement.text('Missing Invoice');
-                missingInvoiceElement.text(formatEUR(missingInvoice));
-                missingInvoiceElement.css('color', 'var(--color-negative)');
+                coverageGapLabelElement.text('Balanced');
+                coverageGapElement.text('✓');
+                coverageGapElement.css('color', 'var(--color-positive)');
+            }} else if (coverageGap < 0) {{
+                // Negative - missing coverage
+                coverageGapLabelElement.text('Missing Coverage');
+                coverageGapElement.text(formatEUR(coverageGap));
+                coverageGapElement.css('color', 'var(--color-negative)');
             }} else {{
-                // Positive - overinvoiced
-                missingInvoiceLabelElement.text('Overinvoiced');
-                missingInvoiceElement.text(formatEUR(missingInvoice));
-                missingInvoiceElement.css('color', '');
+                // Positive - overcovered
+                coverageGapLabelElement.text('Overcovered');
+                coverageGapElement.text(formatEUR(coverageGap));
+                coverageGapElement.css('color', '');
             }}
             $('#remainingBudget').text(formatEUR(remainingBudget));
             $('#totalHours').text(totalHours.toLocaleString('en-US', {{minimumFractionDigits: 2, maximumFractionDigits: 2}}));
@@ -2349,29 +2349,29 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const poCoverageFormatted = formatEUR(stats.poCoverage);
                 const totalCostsFormatted = formatEUR(totalCosts);
                 const invoicesFormatted = formatEUR(stats.invoices);
-                // Missing Invoice = Total Invoices - Total Costs
-                // Negative = missing invoices (not enough invoiced), Positive = overinvoiced, Zero = balanced
-                const missingInvoice = stats.invoices - totalCosts;
-                
+                // Coverage gap = (Invoiced + Positive Financial Record) - Total Costs
+                // Negative = missing coverage, Positive = overcovered
+                const coverageGap = (stats.invoices + stats.positiveFinancialRecord) - totalCosts;
+
                 // Determine label and display value
-                let missingInvoiceLabel = 'Missing Invoice/Overinvoiced';
+                let missingInvoiceLabel = 'Missing Coverage/Overcovered';
                 let missingInvoiceDisplay = '';
                 let missingInvoiceColor = '';
-                
-                if (Math.abs(missingInvoice) < 0.01) {{
+
+                if (Math.abs(coverageGap) < 0.01) {{
                     // Zero or very close to zero - show checkmark
                     missingInvoiceLabel = 'Balanced';
                     missingInvoiceDisplay = '✓';
                     missingInvoiceColor = 'var(--color-positive)';
-                }} else if (missingInvoice < 0) {{
-                    // Negative - missing invoices
-                    missingInvoiceLabel = 'Missing Invoice';
-                    missingInvoiceDisplay = formatEUR(missingInvoice);
+                }} else if (coverageGap < 0) {{
+                    // Negative - missing coverage
+                    missingInvoiceLabel = 'Missing Coverage';
+                    missingInvoiceDisplay = formatEUR(coverageGap);
                     missingInvoiceColor = 'var(--color-negative)';
                 }} else {{
-                    // Positive - overinvoiced
-                    missingInvoiceLabel = 'Overinvoiced';
-                    missingInvoiceDisplay = formatEUR(missingInvoice);
+                    // Positive - overcovered
+                    missingInvoiceLabel = 'Overcovered';
+                    missingInvoiceDisplay = formatEUR(coverageGap);
                     missingInvoiceColor = '';
                 }}
                 
@@ -2427,7 +2427,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const statusIndicator = `<div class="project-status-indicator ${{statusClass}}" data-tooltip="${{tooltipText}}"></div>`;
 
                 const card = $(`
-                    <div class="project-card">
+                    <div class="project-card status-${{statusClass}}">
                         ${{statusIndicator}}
                         <h3>${{project}}</h3>
                         <div class="project-stats">
