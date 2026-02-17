@@ -40,7 +40,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <p><strong>Cost/Invoiced:</strong> Ratio of total invoices to total costs, expressed as a percentage.</p>
                 <p><strong>Total Projects:</strong> Number of unique projects in the dataset.</p>
                 <p><strong>PO Coverage:</strong> Total Purchase Order coverage across all projects.</p>
-                <p><strong>Total Costs:</strong> Sum of all costs including Working Time, Purchases, and T&L. Deferment is handled separately: positive deferment adds to PO coverage and counts as invoiced, negative deferment reduces PO coverage.</p>
+                <p><strong>Total Costs:</strong> Sum of all costs including Working Time, Purchases, and T&L. Deferment is handled separately: positive deferment adds to PO coverage and counts as invoiced, negative deferment reduces PO coverage. Financial Record is also handled separately: positive amounts count as invoiced, negative amounts reduce PO coverage.</p>
                 <p><strong>Total Invoices:</strong> Total invoiced amounts (informational only).</p>
                 <p><strong>Missing Invoice/Overinvoiced:</strong> Difference between Total Invoices and Total Costs. Negative values (shown in red) indicate missing invoices (not enough invoiced), positive values indicate overinvoicing.</p>
                 <p><strong>Remaining Budget:</strong> PO Coverage minus Total Costs.</p>
@@ -63,6 +63,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     <li><strong>Purchase Costs:</strong> Costs from purchase events</li>
                     <li><strong>T&L Costs:</strong> Travel and Logistics costs</li>
                     <li><strong>Deferment:</strong> Positive deferment adds to PO coverage and counts as invoiced. Negative deferment reduces PO coverage. Deferment is not included in costs.</li>
+                    <li><strong>Financial Record:</strong> Positive amounts count as invoiced (marking amounts that will be invoiced later). Negative amounts reduce PO coverage (decreasing the budget). Not included in costs.</li>
                     <li><strong>Monthly Cost Forecast Rate:</strong> Average monthly cost used for budget forecasting</li>
                 </ul>
                 
@@ -605,11 +606,12 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             let purchaseCosts = 0;
             let tlCosts = 0;
             let deferment = 0;
-            
+            let financialRecord = 0;
+
             data.forEach(row => {{
                 const eventType = row.event_type || '';
                 const amount = row.amount || 0;
-                
+
                 if (eventType === 'PO') {{
                     poCoverage += amount;
                 }} else if (eventType === 'Invoice') {{
@@ -629,6 +631,15 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         invoices += amount;  // Count positive deferment as invoiced
                     }} else if (amount < 0) {{
                         poCoverage += amount;  // Subtract negative deferment from PO (amount is already negative)
+                    }}
+                }} else if (eventType === 'Financial Record') {{
+                    financialRecord += amount;
+                    if (amount > 0) {{
+                        // Positive: count as invoiced (will be invoiced later)
+                        invoices += amount;
+                    }} else if (amount < 0) {{
+                        // Negative: decrease budget (like negative deferment)
+                        poCoverage += amount;
                     }}
                 }}
             }});
@@ -750,6 +761,15 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         projectPOCoverage[project] = (projectPOCoverage[project] || 0) + amount;
                     }}
                 }}
+
+                // Financial Record: positive counts as invoiced, negative reduces PO coverage
+                if (eventType === 'Financial Record' && amount) {{
+                    if (amount > 0) {{
+                        projectInvoices[project] = (projectInvoices[project] || 0) + amount;
+                    }} else if (amount < 0) {{
+                        projectPOCoverage[project] = (projectPOCoverage[project] || 0) + amount;
+                    }}
+                }}
                 
                 // Costs by project (Working Time costs, Purchases, T&L - Deferment is NOT a cost)
                 if (eventType === 'Working Time' && row.calculated_cost) {{
@@ -779,7 +799,11 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     if (eventType === 'Deferment' && amount) {{
                         monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
                     }}
-                    
+                    // Negative Financial Record reduces PO coverage
+                    if (eventType === 'Financial Record' && amount < 0) {{
+                        monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
+                    }}
+
                     // Monthly Costs (Deferment is NOT a cost)
                     if (eventType === 'Working Time' && row.calculated_cost) {{
                         monthlyCosts[month] = (monthlyCosts[month] || 0) + row.calculated_cost;
@@ -1099,7 +1123,11 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     if (eventType === 'Deferment' && amount) {{
                         monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
                     }}
-                    
+                    // Negative Financial Record reduces PO coverage
+                    if (eventType === 'Financial Record' && amount < 0) {{
+                        monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
+                    }}
+
                     // Costs (for forecast trend calculation) - Deferment is NOT a cost
                     if (eventType === 'Working Time' && row.calculated_cost) {{
                         monthlyCosts[month] = (monthlyCosts[month] || 0) + row.calculated_cost;
@@ -1822,6 +1850,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         purchaseCosts: 0,
                         tlCosts: 0,
                         deferment: 0,
+                        financialRecord: 0,
                         totalHours: 0,
                         eventTypes: new Set(),
                         events: []
@@ -1850,6 +1879,15 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         projectStats[project].invoices += amount;  // Count positive deferment as invoiced
                     }} else if (amount < 0) {{
                         projectStats[project].poCoverage += amount;  // Subtract negative deferment from PO (amount is already negative)
+                    }}
+                }} else if (eventType === 'Financial Record') {{
+                    projectStats[project].financialRecord += amount;
+                    if (amount > 0) {{
+                        // Positive: count as invoiced (will be invoiced later)
+                        projectStats[project].invoices += amount;
+                    }} else if (amount < 0) {{
+                        // Negative: decrease budget (like negative deferment)
+                        projectStats[project].poCoverage += amount;
                     }}
                 }}
                 
@@ -2005,6 +2043,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const purchaseCostsFormatted = formatEUR(stats.purchaseCosts);
                 const tlCostsFormatted = formatEUR(stats.tlCosts);
                 const defermentFormatted = formatEUR(stats.deferment || 0);
+                const financialRecordFormatted = formatEUR(stats.financialRecord || 0);
                 const forecastRateFormatted = formatEUR(avgMonthlyCost);
                 
                 // Format closure date (already retrieved above)
@@ -2078,6 +2117,10 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             <div class="project-stat">
                                 <div class="project-stat-label">Deferment</div>
                                 <div class="project-stat-value" style="color: ${{(stats.deferment || 0) >= 0 ? '#dc3545' : '#28a745'}}">${{defermentFormatted}}</div>
+                            </div>
+                            <div class="project-stat">
+                                <div class="project-stat-label">Financial Record</div>
+                                <div class="project-stat-value" style="color: ${{(stats.financialRecord || 0) > 0 ? '#007bff' : (stats.financialRecord || 0) < 0 ? '#dc3545' : 'inherit'}}">${{financialRecordFormatted}}</div>
                             </div>
                             <div class="project-stat">
                                 <div class="project-stat-label">Total Hours</div>
