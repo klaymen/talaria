@@ -6,7 +6,96 @@ CSS styles for the dashboard generator.
 
 def get_css():
     """Return CSS styles as a string."""
-    return """        * {
+    return """        :root {
+        /* Primary palette */
+        --color-primary: #4f6bed;
+        --color-primary-hover: #3d56c6;
+        --color-primary-subtle: rgba(79, 107, 237, 0.08);
+
+        /* Gradient */
+        --gradient-header: linear-gradient(135deg, #4f6bed 0%, #6941c6 100%);
+
+        /* Surfaces */
+        --color-bg: #f0f2f5;
+        --color-surface: #ffffff;
+        --color-surface-alt: #f5f6f8;
+        --color-surface-hover: #ebedf0;
+
+        /* Text */
+        --color-text: #1a1d23;
+        --color-text-secondary: #5f6571;
+        --color-text-muted: #8b8f9a;
+
+        /* Borders */
+        --color-border: #d8dbe0;
+        --color-border-light: #e8eaef;
+
+        /* Semantic */
+        --color-positive: #16a34a;
+        --color-negative: #dc2626;
+        --color-warning: #d97706;
+        --color-info: #2563eb;
+
+        /* Shadows */
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+        --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+
+        /* Chart grid */
+        --chart-grid: rgba(0, 0, 0, 0.08);
+        --chart-grid-zero: rgba(0, 0, 0, 0.7);
+        --chart-text: #5f6571;
+
+        /* Chart dataset colors */
+        --chart-po: #16a34a;
+        --chart-costs: #dc2626;
+        --chart-invoices: #4f6bed;
+        --chart-deferment: #71717a;
+        --chart-budget: #ca8a04;
+        --chart-hours: #7c3aed;
+        --chart-forecast-neg: #ea580c;
+        }
+
+        [data-theme="dark"] {
+        --color-primary: #6d8cff;
+        --color-primary-hover: #8aa2ff;
+        --color-primary-subtle: rgba(109, 140, 255, 0.12);
+
+        --gradient-header: linear-gradient(135deg, #4f6bed 0%, #6941c6 100%);
+
+        --color-bg: #111318;
+        --color-surface: #1a1d24;
+        --color-surface-alt: #22252e;
+        --color-surface-hover: #2a2e38;
+
+        --color-text: #e4e5e9;
+        --color-text-secondary: #9ca0ab;
+        --color-text-muted: #6b7080;
+
+        --color-border: #2e323c;
+        --color-border-light: #252830;
+
+        --color-positive: #22c55e;
+        --color-negative: #f87171;
+        --color-warning: #fbbf24;
+        --color-info: #60a5fa;
+
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+        --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+
+        --chart-grid: rgba(255, 255, 255, 0.08);
+        --chart-grid-zero: rgba(255, 255, 255, 0.5);
+        --chart-text: #9ca0ab;
+
+        --chart-po: #22c55e;
+        --chart-costs: #f87171;
+        --chart-invoices: #6d8cff;
+        --chart-deferment: #a1a1aa;
+        --chart-budget: #facc15;
+        --chart-hours: #a78bfa;
+        --chart-forecast-neg: #fb923c;
+        }
+
+        * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
@@ -14,9 +103,10 @@ def get_css():
 
         body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        background: #f5f7fa;
-        color: #333;
+        background: var(--color-bg);
+        color: var(--color-text);
         line-height: 1.6;
+        transition: background 0.3s, color 0.3s;
         }
 
         .container {
@@ -26,12 +116,12 @@ def get_css():
         }
 
         header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--gradient-header);
         color: white;
         padding: 15px 30px;
         border-radius: 10px;
         margin-bottom: 30px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-md);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -47,13 +137,38 @@ def get_css():
         opacity: 0.9;
         }
 
+        /* Theme toggle */
+        .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 62px;
+        width: 35px;
+        height: 35px;
+        background: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        z-index: 1000;
+        transition: background 0.3s;
+        }
+
+        .theme-toggle:hover {
+        background: var(--color-primary-hover);
+        }
+
         .help-icon {
         position: fixed;
         top: 20px;
         right: 20px;
         width: 35px;
         height: 35px;
-        background: #667eea;
+        background: var(--color-primary);
         color: white;
         border-radius: 50%;
         display: flex;
@@ -68,7 +183,7 @@ def get_css():
         }
 
         .help-icon:hover {
-        background: #5568d3;
+        background: var(--color-primary-hover);
         }
 
         .help-modal {
@@ -89,7 +204,8 @@ def get_css():
         }
 
         .help-content {
-        background: white;
+        background: var(--color-surface);
+        color: var(--color-text);
         padding: 30px 40px;
         border-radius: 10px;
         max-width: 600px;
@@ -103,13 +219,13 @@ def get_css():
         .help-content h2 {
         margin-top: 0;
         margin-bottom: 20px;
-        color: #667eea;
+        color: var(--color-primary);
         }
 
         .help-content h3 {
         margin-top: 25px;
         margin-bottom: 12px;
-        color: #667eea;
+        color: var(--color-primary);
         font-size: 1.1em;
         }
 
@@ -131,7 +247,7 @@ def get_css():
         position: absolute;
         top: 15px;
         right: 15px;
-        background: #dc3545;
+        background: var(--color-negative);
         color: white;
         border: none;
         border-radius: 50%;
@@ -145,7 +261,7 @@ def get_css():
         }
 
         .help-content .close-btn:hover {
-        background: #c82333;
+        opacity: 0.85;
         }
 
         .project-status-indicator {
@@ -155,20 +271,20 @@ def get_css():
         width: 20px;
         height: 20px;
         border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        box-shadow: var(--shadow-sm);
         cursor: help;
         }
 
         .project-status-indicator.green {
-        background: #28a745;
+        background: var(--color-positive);
         }
 
         .project-status-indicator.yellow {
-        background: #ffc107;
+        background: var(--color-warning);
         }
 
         .project-status-indicator.red {
-        background: #dc3545;
+        background: var(--color-negative);
         }
 
         .project-status-indicator::after {
@@ -176,8 +292,8 @@ def get_css():
         position: absolute;
         top: -40px;
         right: 0;
-        background: #333;
-        color: white;
+        background: var(--color-text);
+        color: var(--color-bg);
         padding: 8px 12px;
         border-radius: 4px;
         font-size: 12px;
@@ -186,7 +302,7 @@ def get_css():
         pointer-events: none;
         transition: opacity 0.3s;
         z-index: 1000;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        box-shadow: var(--shadow-md);
         }
 
         .project-status-indicator::before {
@@ -195,7 +311,7 @@ def get_css():
         top: -8px;
         right: 10px;
         border: 5px solid transparent;
-        border-top-color: #333;
+        border-top-color: var(--color-text);
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.3s;
@@ -215,15 +331,15 @@ def get_css():
         }
 
         .summary-card {
-        background: white;
+        background: var(--color-surface);
         padding: 25px;
         border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-sm);
         text-align: center;
         }
 
         .summary-card h3 {
-        color: #666;
+        color: var(--color-text-muted);
         font-size: 0.9em;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -233,20 +349,20 @@ def get_css():
         .summary-value {
         font-size: 2em;
         font-weight: bold;
-        color: #667eea;
+        color: var(--color-primary);
         }
 
         .filters-section {
-        background: white;
+        background: var(--color-surface);
         padding: 25px;
         border-radius: 10px;
         margin-bottom: 30px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-sm);
         }
 
         .filters-section h2 {
         margin-bottom: 20px;
-        color: #333;
+        color: var(--color-text);
         }
 
         .filters {
@@ -264,16 +380,18 @@ def get_css():
 
         .filter-group label {
         font-weight: 600;
-        color: #555;
+        color: var(--color-text-secondary);
         font-size: 0.9em;
         }
 
         .filter-group select,
         .filter-group input {
         padding: 8px 12px;
-        border: 1px solid #ddd;
+        border: 1px solid var(--color-border);
         border-radius: 5px;
         font-size: 0.95em;
+        background: var(--color-surface);
+        color: var(--color-text);
         }
 
         .filter-group select {
@@ -298,12 +416,12 @@ def get_css():
         .quick-filters {
         margin-top: 25px;
         padding-top: 25px;
-        border-top: 2px solid #e0e0e0;
+        border-top: 2px solid var(--color-border-light);
         }
 
         .quick-filters h3 {
         margin-bottom: 15px;
-        color: #333;
+        color: var(--color-text);
         font-size: 1.1em;
         }
 
@@ -314,7 +432,7 @@ def get_css():
         .quick-filter-group label {
         display: block;
         font-weight: 600;
-        color: #555;
+        color: var(--color-text-secondary);
         font-size: 0.9em;
         margin-bottom: 10px;
         }
@@ -327,9 +445,9 @@ def get_css():
 
         .quick-filter-btn {
         padding: 8px 16px;
-        background: #f8f9fa;
-        color: #495057;
-        border: 1px solid #dee2e6;
+        background: var(--color-surface-alt);
+        color: var(--color-text-secondary);
+        border: 1px solid var(--color-border);
         border-radius: 5px;
         font-size: 0.9em;
         cursor: pointer;
@@ -337,14 +455,14 @@ def get_css():
         }
 
         .quick-filter-btn:hover {
-        background: #e9ecef;
-        border-color: #adb5bd;
+        background: var(--color-surface-hover);
+        border-color: var(--color-text-muted);
         }
 
         .quick-filter-btn.active {
-        background: #007bff;
+        background: var(--color-primary);
         color: white;
-        border-color: #007bff;
+        border-color: var(--color-primary);
         }
 
         .charts-section {
@@ -361,10 +479,10 @@ def get_css():
         }
 
         .chart-container {
-        background: white;
+        background: var(--color-surface);
         padding: 25px;
         border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-sm);
         position: relative;
         overflow: hidden;
         width: 100%;
@@ -373,28 +491,28 @@ def get_css():
 
         .chart-container h2 {
         margin-bottom: 20px;
-        color: #333;
+        color: var(--color-text);
         font-size: 1.3em;
         }
-        
+
         .chart-filters {
         margin-bottom: 15px;
         padding: 10px;
-        background: #f8f9fa;
+        background: var(--color-surface-alt);
         border-radius: 5px;
         }
-        
+
         .chart-filter-buttons {
         display: flex;
         gap: 10px;
         margin-bottom: 10px;
         padding-bottom: 10px;
-        border-bottom: 1px solid #dee2e6;
+        border-bottom: 1px solid var(--color-border);
         }
-        
+
         .chart-filter-btn {
         padding: 5px 12px;
-        background: #667eea;
+        background: var(--color-primary);
         color: white;
         border: none;
         border-radius: 4px;
@@ -402,26 +520,26 @@ def get_css():
         cursor: pointer;
         transition: background 0.2s;
         }
-        
+
         .chart-filter-btn:hover {
-        background: #5568d3;
+        background: var(--color-primary-hover);
         }
-        
+
         .chart-filter-checkboxes {
         display: flex;
         flex-wrap: wrap;
         gap: 15px;
         }
-        
+
         .chart-filter-checkboxes label {
         display: flex;
         align-items: center;
         gap: 5px;
         font-size: 0.9em;
-        color: #555;
+        color: var(--color-text-secondary);
         cursor: pointer;
         }
-        
+
         .chart-filter-checkboxes input[type="checkbox"] {
         cursor: pointer;
         }
@@ -436,10 +554,10 @@ def get_css():
         left: 50%;
         transform: translate(-50%, -50%);
         text-align: center;
-        color: #999;
+        color: var(--color-text-muted);
         font-size: 16px;
         padding: 20px;
-        background: rgba(255, 255, 255, 0.9);
+        background: var(--color-surface);
         border-radius: 5px;
         display: none;
         z-index: 10;
@@ -449,16 +567,16 @@ def get_css():
         }
 
         .table-section {
-        background: white;
+        background: var(--color-surface);
         padding: 25px;
         border-radius: 10px;
         margin-bottom: 30px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-sm);
         }
 
         .table-section h2 {
         margin-bottom: 20px;
-        color: #333;
+        color: var(--color-text);
         }
 
         .table-controls {
@@ -470,14 +588,22 @@ def get_css():
         .table-controls input {
         flex: 1;
         padding: 10px;
-        border: 1px solid #ddd;
+        border: 1px solid var(--color-border);
         border-radius: 5px;
         font-size: 0.95em;
+        background: var(--color-surface);
+        color: var(--color-text);
+        }
+
+        .table-controls select {
+        background: var(--color-surface);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
         }
 
         .btn-primary {
         padding: 10px 20px;
-        background: #667eea;
+        background: var(--color-primary);
         color: white;
         border: none;
         border-radius: 5px;
@@ -486,7 +612,7 @@ def get_css():
         }
 
         .btn-primary:hover {
-        background: #5568d3;
+        background: var(--color-primary-hover);
         }
 
         .table-wrapper {
@@ -499,12 +625,12 @@ def get_css():
         }
 
         th {
-        background: #f8f9fa;
+        background: var(--color-surface-alt);
         padding: 12px;
         text-align: left;
         font-weight: 600;
-        color: #555;
-        border-bottom: 2px solid #dee2e6;
+        color: var(--color-text-secondary);
+        border-bottom: 2px solid var(--color-border);
         }
 
         th.sortable {
@@ -514,22 +640,22 @@ def get_css():
         }
 
         th.sortable:hover {
-        background: #e9ecef;
-        color: #333;
+        background: var(--color-surface-hover);
+        color: var(--color-text);
         }
 
         .sort-indicator {
         font-size: 0.75em;
-        color: #667eea;
+        color: var(--color-primary);
         }
 
         td {
         padding: 12px;
-        border-bottom: 1px solid #dee2e6;
+        border-bottom: 1px solid var(--color-border-light);
         }
 
         tr:hover {
-        background: #f8f9fa;
+        background: var(--color-primary-subtle);
         }
 
         td.comment-cell {
@@ -537,7 +663,7 @@ def get_css():
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        color: #555;
+        color: var(--color-text-secondary);
         font-size: 0.9em;
         }
 
@@ -554,7 +680,7 @@ def get_css():
         gap: 8px;
         margin-top: 15px;
         padding-top: 15px;
-        border-top: 1px solid #dee2e6;
+        border-top: 1px solid var(--color-border-light);
         }
 
         .btn-sm {
@@ -563,28 +689,28 @@ def get_css():
         }
 
         .project-details-section {
-        background: white;
+        background: var(--color-surface);
         padding: 25px;
         border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-sm);
         }
 
         .project-details-section h2 {
         margin-bottom: 20px;
-        color: #333;
+        color: var(--color-text);
         }
 
         .project-card {
         position: relative;
         margin-bottom: 20px;
         padding: 20px;
-        background: #f8f9fa;
+        background: var(--color-surface-alt);
         border-radius: 8px;
-        border-left: 4px solid #667eea;
+        border-left: 4px solid var(--color-primary);
         }
 
         .project-card h3 {
-        color: #667eea;
+        color: var(--color-primary);
         margin-bottom: 15px;
         }
 
@@ -601,14 +727,14 @@ def get_css():
 
         .project-stat-label {
         font-size: 0.85em;
-        color: #666;
+        color: var(--color-text-muted);
         margin-bottom: 5px;
         }
 
         .project-stat-value {
         font-size: 1.3em;
         font-weight: bold;
-        color: #333;
+        color: var(--color-text);
         }
 
         @media (max-width: 768px) {
