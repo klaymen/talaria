@@ -31,6 +31,7 @@ def calculate_project_financials(records):
                 'purchase_costs': 0.0,  # Purchase amounts
                 'tl_costs': 0.0,      # T&L amounts
                 'deferment': 0.0,     # Deferment amounts (can be positive or negative)
+                'financial_record': 0.0,  # Financial Record amounts
                 'total_hours': 0.0,
                 'total_amount': 0.0
             }
@@ -52,7 +53,15 @@ def calculate_project_financials(records):
             project_financials[project]['tl_costs'] += amount
         elif event_type == 'Deferment':
             project_financials[project]['deferment'] += amount
-        
+        elif event_type == 'Financial Record':
+            project_financials[project]['financial_record'] += amount
+            if amount > 0:
+                # Positive: count as invoiced (will be invoiced later)
+                project_financials[project]['invoices'] += amount
+            elif amount < 0:
+                # Negative: decrease budget (like negative deferment)
+                project_financials[project]['po_coverage'] += amount
+
         project_financials[project]['total_amount'] += amount
     
     return project_financials
@@ -66,10 +75,11 @@ def calculate_totals(project_financials, records):
     total_purchase_costs = sum(pf['purchase_costs'] for pf in project_financials.values())
     total_tl_costs = sum(pf['tl_costs'] for pf in project_financials.values())
     total_deferment = sum(pf['deferment'] for pf in project_financials.values())
+    total_financial_record = sum(pf['financial_record'] for pf in project_financials.values())
     # Total costs = Working Time + Purchase + T&L + Deferment (Deferment can be positive or negative)
     total_costs = total_working_time_costs + total_purchase_costs + total_tl_costs + total_deferment
     total_hours = sum(r['hours'] for r in records)
-    
+
     return {
         'total_po_coverage': total_po_coverage,
         'total_invoices': total_invoices,
@@ -77,6 +87,7 @@ def calculate_totals(project_financials, records):
         'total_purchase_costs': total_purchase_costs,
         'total_tl_costs': total_tl_costs,
         'total_deferment': total_deferment,
+        'total_financial_record': total_financial_record,
         'total_costs': total_costs,
         'total_hours': total_hours
     }
