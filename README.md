@@ -143,7 +143,7 @@ In addition to the Comment column, the dashboard also reads **cell-level Excel c
 - Clear all filters
 
 ### Charts
-- **Amount by Project**: Bar chart showing Budget, Costs, Invoices, Deferment, and Remaining Budget per project
+- **Amount by Project**: Bar chart showing Budget, Costs, Invoices, Deferment, Financial Record, and Remaining Budget per project
 - **Hours by Project**: Bar chart showing total hours per project
 - **Timeline**: Line chart showing monthly costs and cumulative remaining budget over time
 - **Budget Forecast**: Line chart showing actual and forecasted remaining budget, with color-coded forecast (green for positive, orange for negative)
