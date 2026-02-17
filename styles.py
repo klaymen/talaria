@@ -140,9 +140,8 @@ def get_css():
         /* Toolbar strip – fixed right edge */
         .toolbar-strip {
         position: fixed;
-        top: 50%;
+        top: 18px;
         right: 0;
-        transform: translateY(-50%);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -715,6 +714,16 @@ def get_css():
         font-size: 1.3em;
         font-weight: bold;
         color: var(--color-text);
+        }
+
+        .project-stat.cost-highlight {
+        background: rgba(79, 107, 237, 0.07);
+        border-radius: 8px;
+        padding: 8px 4px;
+        }
+
+        [data-theme="dark"] .project-stat.cost-highlight {
+        background: rgba(109, 140, 255, 0.12);
         }
 
         /* Collapsible sections */

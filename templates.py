@@ -346,6 +346,13 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             applyChartDefaults();
         }}
         initTheme();
+        // Set correct icon (sun in dark mode, moon in light mode) on load
+        document.addEventListener('DOMContentLoaded', function() {{ updateThemeIcon(); }});
+
+        function updateThemeIcon() {{
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.getElementById('themeToggle').innerHTML = isDark ? '&#9788;' : '&#9790;';
+        }}
 
         function toggleTheme() {{
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -356,6 +363,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 document.documentElement.setAttribute('data-theme', 'dark');
                 localStorage.setItem('talaria-theme', 'dark');
             }}
+            updateThemeIcon();
             applyChartDefaults();
             // Re-render charts with new theme colors
             applyFilters();
@@ -2399,10 +2407,6 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                                 <div class="project-stat-value">${{totalCostsFormatted}}</div>
                             </div>
                             <div class="project-stat">
-                                <div class="project-stat-label">Closure Date</div>
-                                <div class="project-stat-value">${{closureDateFormatted}}</div>
-                            </div>
-                            <div class="project-stat">
                                 <div class="project-stat-label">EAC</div>
                                 <div class="project-stat-value" ${{eacStyle}}>${{eacFormatted}}</div>
                             </div>
@@ -2418,15 +2422,15 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                                 <div class="project-stat-label">Remaining Budget</div>
                                 <div class="project-stat-value" style="color: ${{budgetStatus === 'positive' ? 'var(--color-positive)' : 'var(--color-negative)'}}">${{remainingBudgetFormatted}}</div>
                             </div>
-                            <div class="project-stat">
+                            <div class="project-stat cost-highlight">
                                 <div class="project-stat-label">Working Time Costs</div>
                                 <div class="project-stat-value">${{workingTimeCostsFormatted}}</div>
                             </div>
-                            <div class="project-stat">
+                            <div class="project-stat cost-highlight">
                                 <div class="project-stat-label">Purchase Costs</div>
                                 <div class="project-stat-value">${{purchaseCostsFormatted}}</div>
                             </div>
-                            <div class="project-stat">
+                            <div class="project-stat cost-highlight">
                                 <div class="project-stat-label">T&L Costs</div>
                                 <div class="project-stat-value">${{tlCostsFormatted}}</div>
                             </div>
@@ -2445,6 +2449,10 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             <div class="project-stat">
                                 <div class="project-stat-label">Monthly Cost Forecast Rate</div>
                                 <div class="project-stat-value">${{forecastRateFormatted}}</div>
+                            </div>
+                            <div class="project-stat">
+                                <div class="project-stat-label">Closure Date</div>
+                                <div class="project-stat-value">${{closureDateFormatted}}</div>
                             </div>
                         </div>
                     </div>
