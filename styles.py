@@ -553,35 +553,41 @@ def get_css():
 
         .comment-tooltip {
         display: none;
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
+        position: fixed;
         background: #333;
         color: #fff;
-        padding: 8px 12px;
+        padding: 10px 14px;
         border-radius: 6px;
         font-size: 0.85em;
+        line-height: 1.4;
         white-space: pre-wrap;
-        max-width: 350px;
-        z-index: 100;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        width: 420px;
+        max-width: 90vw;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         pointer-events: none;
+        word-wrap: break-word;
         }
 
         .comment-tooltip::after {
         content: '';
         position: absolute;
-        top: 100%;
         left: 50%;
         transform: translateX(-50%);
         border: 6px solid transparent;
+        }
+
+        .comment-tooltip.tooltip-above::after {
+        top: 100%;
         border-top-color: #333;
         }
 
-        tr.has-comment:hover .comment-tooltip {
-        display: block;
+        .comment-tooltip.tooltip-below::after {
+        bottom: 100%;
+        border-bottom-color: #333;
         }
+
+        /* Tooltip display is handled by JS for proper positioning */
 
         .table-pagination {
         display: flex;
