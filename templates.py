@@ -118,6 +118,10 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <div class="summary-value" id="costInvoicedRatio">-</div>
             </div>
             <div class="summary-card">
+                <h3>Coverage</h3>
+                <div class="summary-value" id="coverageRatio">-</div>
+            </div>
+            <div class="summary-card">
                 <h3>Total Projects</h3>
                 <div class="summary-value" id="totalProjects">{len(projects)}</div>
             </div>
@@ -833,7 +837,17 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 invoicedCostRatio = '∞';
             }}
             
+            // Calculate Coverage = Cost / (Invoiced + Positive Financial Record)
+            let coverageRatioText = '-';
+            const globalCoverageDenom = invoices + positiveFinancialRecord;
+            if (globalCoverageDenom > 0 && totalCosts > 0) {{
+                coverageRatioText = (totalCosts / globalCoverageDenom * 100).toFixed(1) + '%';
+            }} else if (totalCosts === 0 && globalCoverageDenom >= 0) {{
+                coverageRatioText = '0%';
+            }}
+
             $('#costInvoicedRatio').text(invoicedCostRatio);
+            $('#coverageRatio').text(coverageRatioText);
             $('#totalProjects').text(projects.length);
             $('#totalPOCoverage').text(formatEUR(poCoverage));
             $('#totalCosts').text(formatEUR(totalCosts));
@@ -2391,6 +2405,16 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const eacColor = (forecast && forecast.closureBudget !== null && forecast.closureBudget !== undefined && forecast.closureBudget < 0) ? 'var(--color-negative)' : '';
                 const eacStyle = eacColor ? `style="color: ${{eacColor}}"` : '';
                 
+                // Cost/Invoiced per project
+                let costInvoicedFormatted = '-';
+                if (totalCosts > 0 && stats.invoices > 0) {{
+                    costInvoicedFormatted = (stats.invoices / totalCosts * 100).toFixed(1) + '%';
+                }} else if (stats.invoices > 0) {{
+                    costInvoicedFormatted = '∞';
+                }} else if (totalCosts === 0) {{
+                    costInvoicedFormatted = '-';
+                }}
+
                 // Coverage = Cost / (Invoiced + Positive Financial Record)
                 const coverageDenom = stats.invoices + stats.positiveFinancialRecord;
                 let coverageFormatted = '-';
@@ -2405,7 +2429,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const card = $(`
                     <div class="project-card">
                         ${{statusIndicator}}
-                        <h3>${{project}} <span class="project-coverage">Coverage ${{coverageFormatted}}</span></h3>
+                        <h3>${{project}}</h3>
                         <div class="project-stats">
                             <div class="project-stat cost-highlight">
                                 <div class="project-stat-label">Budget</div>
@@ -2418,6 +2442,14 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             <div class="project-stat cost-highlight">
                                 <div class="project-stat-label">EAC</div>
                                 <div class="project-stat-value" ${{eacStyle}}>${{eacFormatted}}</div>
+                            </div>
+                            <div class="project-stat cost-highlight">
+                                <div class="project-stat-label">Cost/Invoiced</div>
+                                <div class="project-stat-value">${{costInvoicedFormatted}}</div>
+                            </div>
+                            <div class="project-stat cost-highlight">
+                                <div class="project-stat-label">Coverage</div>
+                                <div class="project-stat-value">${{coverageFormatted}}</div>
                             </div>
                             <div class="project-stat">
                                 <div class="project-stat-label">Invoices</div>
