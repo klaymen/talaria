@@ -346,6 +346,29 @@ def get_css():
         color: var(--color-primary);
         }
 
+        .project-status-counts {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        }
+
+        .status-count {
+        font-size: 2em;
+        font-weight: bold;
+        }
+
+        .status-count.green {
+        color: var(--color-positive);
+        }
+
+        .status-count.yellow {
+        color: var(--color-warning);
+        }
+
+        .status-count.red {
+        color: var(--color-negative);
+        }
+
         .filters-section {
         background: var(--color-surface);
         padding: 14px 18px;

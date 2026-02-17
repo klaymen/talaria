@@ -127,6 +127,7 @@ In addition to the Comment column, the dashboard also reads **cell-level Excel c
 - **Cost/Invoiced**: Ratio of total invoices to total costs as a percentage
 - **Coverage**: Cost / (Invoiced + Positive Financial Record) — how much of the covered amount has been spent
 - **Total Projects**: Number of unique projects
+- **Project Status**: Count of projects by forecast status (green/yellow/red) shown as colored numbers
 - **Budget**: Total budget from Purchase Orders (adjusted by Deferment and negative Financial Records)
 - **Total Costs**: Working Time + Purchases + T&L
 - **Total Invoices**: Invoice + positive Deferment amounts (positive Financial Records are *not* included in invoices)

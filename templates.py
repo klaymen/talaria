@@ -59,6 +59,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <h3>Summary Cards</h3>
                 <p><strong>Cost/Invoiced:</strong> Ratio of total invoices to total costs, expressed as a percentage.</p>
                 <p><strong>Total Projects:</strong> Number of unique projects in the dataset.</p>
+                <p><strong>Project Status:</strong> Number of projects in each forecast status &mdash; green (positive), yellow (slightly negative), red (significantly negative).</p>
                 <p><strong>Budget:</strong> Total Purchase Order coverage across all projects (includes positive Deferment and is reduced by negative Deferment and negative Financial Records).</p>
                 <p><strong>Total Costs:</strong> Sum of Working Time + Purchases + T&amp;L. Deferment and Financial Record are not costs.</p>
                 <p><strong>Total Invoices:</strong> Total invoiced amounts (includes Invoice events and positive Deferment). Positive Financial Records are <em>not</em> counted as invoiced.</p>
@@ -124,6 +125,14 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             <div class="summary-card">
                 <h3>Total Projects</h3>
                 <div class="summary-value" id="totalProjects">{len(projects)}</div>
+            </div>
+            <div class="summary-card">
+                <h3>Project Status</h3>
+                <div class="project-status-counts">
+                    <span class="status-count green" id="greenProjectCount">0</span>
+                    <span class="status-count yellow" id="yellowProjectCount">0</span>
+                    <span class="status-count red" id="redProjectCount">0</span>
+                </div>
             </div>
             <div class="summary-card">
                 <h3>Budget</h3>
@@ -2236,7 +2245,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             
             const detailsDiv = $('#projectDetails');
             detailsDiv.empty();
-            
+            let greenCount = 0, yellowCount = 0, redCount = 0;
+
             Object.keys(projectStats).sort().forEach(project => {{
                 const stats = projectStats[project];
                 // Total costs = Working Time + Purchase + T&L (Deferment is NOT a cost)
@@ -2335,6 +2345,10 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     statusClass = 'red';
                 }}
                 
+                if (statusClass === 'green') greenCount++;
+                else if (statusClass === 'yellow') yellowCount++;
+                else if (statusClass === 'red') redCount++;
+
                 // Create tooltip text based on status
                 let tooltipText = '';
                 if (statusClass === 'green') {{
@@ -2500,8 +2514,12 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 `);
                 detailsDiv.append(card);
             }});
+
+            $('#greenProjectCount').text(greenCount);
+            $('#yellowProjectCount').text(yellowCount);
+            $('#redProjectCount').text(redCount);
         }}
-        
+
         function exportToCSV() {{
             const headers = ['#', 'Date', 'Event Type', 'Project', 'Sheet', 'Hourly Rate', 'Additional Rate', 'Hours', 'Amount', 'Calculated Cost', 'Comment'];
             const rows = filteredData.map(row => {{
