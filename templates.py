@@ -30,6 +30,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             <span class="header-info">Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</span>
         </header>
         
+        <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">&#9790;</button>
         <div class="help-icon" id="helpIcon">?</div>
         
         <div class="help-modal" id="helpModal">
@@ -220,16 +221,16 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
         <!-- Data Table -->
         <div class="table-section">
-            <h2>Data Table <span id="tableRecordCount" style="font-size: 0.7em; color: #888; font-weight: normal;"></span></h2>
+            <h2>Data Table <span id="tableRecordCount" style="font-size: 0.7em; color: var(--color-text-muted); font-weight: normal;"></span></h2>
             <div class="table-controls">
                 <input type="text" id="searchInput" placeholder="Search..." />
-                <select id="tableEventTypeFilter" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95em;">
+                <select id="tableEventTypeFilter" style="padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.95em; background: var(--color-surface); color: var(--color-text);">
                     <option value="all">All Types</option>
                 </select>
-                <select id="tableSheetFilter" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95em;">
+                <select id="tableSheetFilter" style="padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.95em; background: var(--color-surface); color: var(--color-text);">
                     <option value="all">All Sheets</option>
                 </select>
-                <select id="tablePageSize" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95em;">
+                <select id="tablePageSize" style="padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.95em; background: var(--color-surface); color: var(--color-text);">
                     <option value="25">25 rows</option>
                     <option value="50" selected>50 rows</option>
                     <option value="100">100 rows</option>
@@ -260,7 +261,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             </div>
             <div class="table-pagination" id="tablePagination">
                 <button class="btn-secondary btn-sm" id="prevPage" disabled>&laquo; Previous</button>
-                <span id="pageInfo" style="padding: 6px 12px; color: #555;"></span>
+                <span id="pageInfo" style="padding: 6px 12px; color: var(--color-text-secondary);"></span>
                 <button class="btn-secondary btn-sm" id="nextPage">&raquo; Next</button>
             </div>
         </div>
@@ -293,14 +294,64 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
     </div>
 
     <script>
+        // Theme management
+        function getChartColors() {{
+            const style = getComputedStyle(document.documentElement);
+            return {{
+                grid: style.getPropertyValue('--chart-grid').trim(),
+                gridZero: style.getPropertyValue('--chart-grid-zero').trim(),
+                text: style.getPropertyValue('--chart-text').trim(),
+                po: style.getPropertyValue('--chart-po').trim(),
+                costs: style.getPropertyValue('--chart-costs').trim(),
+                invoices: style.getPropertyValue('--chart-invoices').trim(),
+                deferment: style.getPropertyValue('--chart-deferment').trim(),
+                budget: style.getPropertyValue('--chart-budget').trim(),
+                hours: style.getPropertyValue('--chart-hours').trim(),
+                forecastNeg: style.getPropertyValue('--chart-forecast-neg').trim(),
+                positive: style.getPropertyValue('--color-positive').trim(),
+                negative: style.getPropertyValue('--color-negative').trim(),
+            }};
+        }}
+
+        function applyChartDefaults() {{
+            const c = getChartColors();
+            Chart.defaults.color = c.text;
+            Chart.defaults.borderColor = c.grid;
+        }}
+
+        function initTheme() {{
+            const saved = localStorage.getItem('talaria-theme');
+            if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {{
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }}
+            applyChartDefaults();
+        }}
+        initTheme();
+
+        function toggleTheme() {{
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (isDark) {{
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('talaria-theme', 'light');
+            }} else {{
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('talaria-theme', 'dark');
+            }}
+            applyChartDefaults();
+            // Re-render charts with new theme colors
+            applyFilters();
+        }}
+
         // Embedded data
         const allData = {data_json};
         const projectFinancials = {financials_json};
         const monthlyWorkingTime = {monthly_summary_json};
         let filteredData = [...allData];
-        
+
         // Initialize dashboard
         $(document).ready(function() {{
+            // Theme toggle
+            $('#themeToggle').on('click', toggleTheme);
             // Help modal functionality
             $('#helpIcon').on('click', function() {{
                 $('#helpModal').addClass('active');
@@ -766,17 +817,17 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 // Zero or very close to zero - show checkmark
                 missingInvoiceLabelElement.text('Balanced');
                 missingInvoiceElement.text('✓');
-                missingInvoiceElement.css('color', '#28a745'); // Green checkmark
+                missingInvoiceElement.css('color', 'var(--color-positive)');
             }} else if (missingInvoice < 0) {{
                 // Negative - missing invoices
                 missingInvoiceLabelElement.text('Missing Invoice');
                 missingInvoiceElement.text(formatEUR(missingInvoice));
-                missingInvoiceElement.css('color', '#dc3545'); // Red
+                missingInvoiceElement.css('color', 'var(--color-negative)');
             }} else {{
                 // Positive - overinvoiced
                 missingInvoiceLabelElement.text('Overinvoiced');
                 missingInvoiceElement.text(formatEUR(missingInvoice));
-                missingInvoiceElement.css('color', ''); // Default color
+                missingInvoiceElement.css('color', '');
             }}
             $('#remainingBudget').text(formatEUR(remainingBudget));
             $('#totalHours').text(totalHours.toLocaleString('en-US', {{minimumFractionDigits: 2, maximumFractionDigits: 2}}));
@@ -1032,6 +1083,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 $('#projectAmountChartSelectNone').off('click.chartFilter');
                 
                 const ctx1 = document.getElementById('projectAmountChart').getContext('2d');
+                const cc1 = getChartColors();
                 window.projectFinancialChart = new Chart(ctx1, {{
                 type: 'bar',
                 data: {{
@@ -1040,40 +1092,40 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         {{
                             label: 'PO Coverage (€)',
                             data: allProjects.map(p => projectPOCoverage[p] || 0),
-                            backgroundColor: 'rgba(40, 167, 69, 0.6)',
-                            borderColor: 'rgba(40, 167, 69, 1)',
+                            backgroundColor: cc1.po + '99',
+                            borderColor: cc1.po,
                             borderWidth: 1,
                             hidden: !checkboxStates[0]
                         }},
                         {{
                             label: 'Costs (€)',
                             data: allProjects.map(p => projectCosts[p] || 0),
-                            backgroundColor: 'rgba(220, 53, 69, 0.6)',
-                            borderColor: 'rgba(220, 53, 69, 1)',
+                            backgroundColor: cc1.costs + '99',
+                            borderColor: cc1.costs,
                             borderWidth: 1,
                             hidden: !checkboxStates[1]
                         }},
                         {{
                             label: 'Invoices (€)',
                             data: allProjects.map(p => projectInvoices[p] || 0),
-                            backgroundColor: 'rgba(102, 126, 234, 0.6)',
-                            borderColor: 'rgba(102, 126, 234, 1)',
+                            backgroundColor: cc1.invoices + '99',
+                            borderColor: cc1.invoices,
                             borderWidth: 1,
                             hidden: !checkboxStates[2]
                         }},
                         {{
                             label: 'Deferment (€)',
                             data: allProjects.map(p => projectDeferment[p] || 0),
-                            backgroundColor: 'rgba(128, 128, 128, 0.6)',
-                            borderColor: 'rgba(128, 128, 128, 1)',
+                            backgroundColor: cc1.deferment + '99',
+                            borderColor: cc1.deferment,
                             borderWidth: 1,
                             hidden: !checkboxStates[3]
                         }},
                         {{
                             label: 'Remaining Budget (€)',
                             data: allProjects.map(p => (projectPOCoverage[p] || 0) - (projectCosts[p] || 0)),
-                            backgroundColor: 'rgba(255, 193, 7, 0.6)',
-                            borderColor: 'rgba(255, 193, 7, 1)',
+                            backgroundColor: cc1.budget + '99',
+                            borderColor: cc1.budget,
                             borderWidth: 1,
                             hidden: !checkboxStates[4]
                         }}
@@ -1092,14 +1144,13 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             }},
                             grid: {{
                                 color: function(context) {{
-                                    // Make zero line thick and black
+                                    const c = getChartColors();
                                     if (context.tick.value === 0) {{
-                                        return 'rgba(0, 0, 0, 1)';
+                                        return c.gridZero;
                                     }}
-                                    return 'rgba(0, 0, 0, 0.1)';
+                                    return c.grid;
                                 }},
                                 lineWidth: function(context) {{
-                                    // Make zero line thicker
                                     if (context.tick.value === 0) {{
                                         return 3;
                                     }}
@@ -1157,6 +1208,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             
             if (hoursProjects.length > 0) {{
                 const ctx2 = document.getElementById('projectHoursChart').getContext('2d');
+                const cc2 = getChartColors();
                 window.projectHoursChart = new Chart(ctx2, {{
                     type: 'bar',
                     data: {{
@@ -1164,8 +1216,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         datasets: [{{
                             label: 'Hours',
                             data: hoursProjects.map(p => projectHours[p]),
-                            backgroundColor: 'rgba(118, 75, 162, 0.6)',
-                            borderColor: 'rgba(118, 75, 162, 1)',
+                            backgroundColor: cc2.hours + '99',
+                            borderColor: cc2.hours,
                             borderWidth: 1
                         }}]
                     }},
@@ -1206,6 +1258,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }});
                 
                 const ctx4 = document.getElementById('timelineChart').getContext('2d');
+                const cc4 = getChartColors();
                 window.timelineChart = new Chart(ctx4, {{
                     type: 'line',
                     data: {{
@@ -1214,8 +1267,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             {{
                                 label: 'Monthly Costs (€)',
                                 data: monthlyCostsData,
-                                borderColor: 'rgba(220, 53, 69, 1)',
-                                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                                borderColor: cc4.costs,
+                                backgroundColor: cc4.costs + '1a',
                                 tension: 0,
                                 fill: false,
                                 yAxisID: 'y'
@@ -1223,8 +1276,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             {{
                                 label: 'Remaining Budget (€)',
                                 data: cumulativeRemainingBudget,
-                                borderColor: 'rgba(40, 167, 69, 1)',
-                                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                borderColor: cc4.po,
+                                backgroundColor: cc4.po + '1a',
                                 tension: 0,
                                 fill: false,
                                 yAxisID: 'y'
@@ -1248,14 +1301,13 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                                 }},
                                 grid: {{
                                     color: function(context) {{
-                                        // Make zero line thick and black
+                                        const c = getChartColors();
                                         if (context.tick.value === 0) {{
-                                            return 'rgba(0, 0, 0, 1)';
+                                            return c.gridZero;
                                         }}
-                                        return 'rgba(0, 0, 0, 0.1)';
+                                        return c.grid;
                                     }},
                                     lineWidth: function(context) {{
-                                        // Make zero line thicker
                                         if (context.tick.value === 0) {{
                                             return 3;
                                         }}
@@ -1841,12 +1893,13 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const forecastTension = 0;
                 
                 // Create datasets array: actual line + two forecast lines (positive green, negative orange)
+                const ccF = getChartColors();
                 const datasets = [
                     {{
                         label: 'Actual',
                         data: actualData,
-                        borderColor: 'rgba(40, 167, 69, 1)',  // Green
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        borderColor: ccF.po,
+                        backgroundColor: ccF.po + '1a',
                         borderWidth: 3,
                         tension: 0,
                         fill: false,
@@ -1857,8 +1910,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     {{
                         label: 'Forecast (Positive)',
                         data: forecastPositiveData,
-                        borderColor: 'rgba(40, 167, 69, 1)',  // Green
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        borderColor: ccF.po,
+                        backgroundColor: ccF.po + '1a',
                         borderWidth: 3,
                         borderDash: [5, 5],
                         tension: forecastTension,
@@ -1870,8 +1923,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     {{
                         label: 'Forecast (Negative)',
                         data: forecastNegativeData,
-                        borderColor: 'rgba(255, 152, 0, 1)',  // Orange
-                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                        borderColor: ccF.forecastNeg,
+                        backgroundColor: ccF.forecastNeg + '1a',
                         borderWidth: 3,
                         borderDash: [5, 5],
                         tension: forecastTension,
@@ -1928,14 +1981,13 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                                 }},
                                 grid: {{
                                     color: function(context) {{
-                                        // Make zero line thick and black
+                                        const c = getChartColors();
                                         if (context.tick.value === 0) {{
-                                            return 'rgba(0, 0, 0, 1)';
+                                            return c.gridZero;
                                         }}
-                                        return 'rgba(0, 0, 0, 0.1)';
+                                        return c.grid;
                                     }},
                                     lineWidth: function(context) {{
-                                        // Make zero line thicker
                                         if (context.tick.value === 0) {{
                                             return 3;
                                         }}
@@ -2202,17 +2254,17 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     // Zero or very close to zero - show checkmark
                     missingInvoiceLabel = 'Balanced';
                     missingInvoiceDisplay = '✓';
-                    missingInvoiceColor = '#28a745'; // Green checkmark
+                    missingInvoiceColor = 'var(--color-positive)';
                 }} else if (missingInvoice < 0) {{
                     // Negative - missing invoices
                     missingInvoiceLabel = 'Missing Invoice';
                     missingInvoiceDisplay = formatEUR(missingInvoice);
-                    missingInvoiceColor = '#dc3545'; // Red
+                    missingInvoiceColor = 'var(--color-negative)';
                 }} else {{
                     // Positive - overinvoiced
                     missingInvoiceLabel = 'Overinvoiced';
                     missingInvoiceDisplay = formatEUR(missingInvoice);
-                    missingInvoiceColor = ''; // Default color
+                    missingInvoiceColor = '';
                 }}
                 
                 const missingInvoiceStyle = missingInvoiceColor ? `style="color: ${{missingInvoiceColor}}"` : '';
@@ -2242,7 +2294,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }}
                 
                 // Determine EAC color (red if negative)
-                const eacColor = (forecast && forecast.closureBudget !== null && forecast.closureBudget !== undefined && forecast.closureBudget < 0) ? '#dc3545' : '';
+                const eacColor = (forecast && forecast.closureBudget !== null && forecast.closureBudget !== undefined && forecast.closureBudget < 0) ? 'var(--color-negative)' : '';
                 const eacStyle = eacColor ? `style="color: ${{eacColor}}"` : '';
                 
                 const statusIndicator = `<div class="project-status-indicator ${{statusClass}}" data-tooltip="${{tooltipText}}"></div>`;
@@ -2278,7 +2330,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             </div>
                             <div class="project-stat">
                                 <div class="project-stat-label">Remaining Budget</div>
-                                <div class="project-stat-value" style="color: ${{budgetStatus === 'positive' ? '#28a745' : '#dc3545'}}">${{remainingBudgetFormatted}}</div>
+                                <div class="project-stat-value" style="color: ${{budgetStatus === 'positive' ? 'var(--color-positive)' : 'var(--color-negative)'}}">${{remainingBudgetFormatted}}</div>
                             </div>
                             <div class="project-stat">
                                 <div class="project-stat-label">Working Time Costs</div>
@@ -2294,11 +2346,11 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             </div>
                             <div class="project-stat">
                                 <div class="project-stat-label">Deferment</div>
-                                <div class="project-stat-value" style="color: ${{(stats.deferment || 0) >= 0 ? '#dc3545' : '#28a745'}}">${{defermentFormatted}}</div>
+                                <div class="project-stat-value" style="color: ${{(stats.deferment || 0) >= 0 ? 'var(--color-negative)' : 'var(--color-positive)'}}">${{defermentFormatted}}</div>
                             </div>
                             <div class="project-stat">
                                 <div class="project-stat-label">Financial Record</div>
-                                <div class="project-stat-value" style="color: ${{(stats.financialRecord || 0) > 0 ? '#007bff' : (stats.financialRecord || 0) < 0 ? '#dc3545' : 'inherit'}}">${{financialRecordFormatted}}</div>
+                                <div class="project-stat-value" style="color: ${{(stats.financialRecord || 0) > 0 ? 'var(--color-info)' : (stats.financialRecord || 0) < 0 ? 'var(--color-negative)' : 'inherit'}}">${{financialRecordFormatted}}</div>
                             </div>
                             <div class="project-stat">
                                 <div class="project-stat-label">Total Hours</div>
