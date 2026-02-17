@@ -541,6 +541,12 @@ def get_css():
         font-size: 0.9em;
         }
 
+        td.comment-cell:hover {
+        white-space: normal;
+        overflow: visible;
+        word-break: break-word;
+        }
+
         .table-pagination {
         display: flex;
         align-items: center;
