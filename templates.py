@@ -36,42 +36,68 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             <div class="help-content">
                 <button class="close-btn" id="closeHelp">&times;</button>
                 <h2>Dashboard Guide</h2>
+
+                <h3>Data Source</h3>
+                <p>The dashboard reads <strong>all sheets/tabs</strong> from the input Excel file. Records from every sheet are merged into a single dataset. Each record tracks which sheet it originated from.</p>
+
+                <h3>Event Types</h3>
+                <ul>
+                    <li><strong>PO (Purchase Order):</strong> Adds to the project budget (PO Coverage).</li>
+                    <li><strong>Working Time:</strong> A cost. Calculated as hours &times; hourly rate &times; (1 + additional rate). The calculated cost is shown instead of the Amount field.</li>
+                    <li><strong>Purchase:</strong> A direct cost (e.g. software licenses, hardware).</li>
+                    <li><strong>T&amp;L:</strong> Travel &amp; Logistics costs.</li>
+                    <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a cost, not added to PO coverage. Used for the Missing Invoice / Overinvoiced calculation.</li>
+                    <li><strong>Deferment:</strong> Positive deferment adds to PO coverage and counts as invoiced. Negative deferment reduces PO coverage. Not included in costs.</li>
+                    <li><strong>Financial Record:</strong> Positive amounts count as invoiced (marking amounts that will be invoiced later, so they don&rsquo;t appear as uninvoiced). Negative amounts reduce PO coverage (decreasing the budget). Not included in costs.</li>
+                    <li><strong>Closure:</strong> Marks the project end date. The budget forecast extends to the closure month.</li>
+                </ul>
+
                 <h3>Summary Cards</h3>
                 <p><strong>Cost/Invoiced:</strong> Ratio of total invoices to total costs, expressed as a percentage.</p>
                 <p><strong>Total Projects:</strong> Number of unique projects in the dataset.</p>
-                <p><strong>PO Coverage:</strong> Total Purchase Order coverage across all projects.</p>
-                <p><strong>Total Costs:</strong> Sum of all costs including Working Time, Purchases, and T&L. Deferment is handled separately: positive deferment adds to PO coverage and counts as invoiced, negative deferment reduces PO coverage. Financial Record is also handled separately: positive amounts count as invoiced, negative amounts reduce PO coverage.</p>
-                <p><strong>Total Invoices:</strong> Total invoiced amounts (informational only).</p>
-                <p><strong>Missing Invoice/Overinvoiced:</strong> Difference between Total Invoices and Total Costs. Negative values (shown in red) indicate missing invoices (not enough invoiced), positive values indicate overinvoicing.</p>
+                <p><strong>PO Coverage:</strong> Total Purchase Order coverage across all projects (includes positive Deferment and is reduced by negative Deferment and negative Financial Records).</p>
+                <p><strong>Total Costs:</strong> Sum of Working Time + Purchases + T&amp;L. Deferment and Financial Record are not costs.</p>
+                <p><strong>Total Invoices:</strong> Total invoiced amounts (includes Invoice events, positive Deferment, and positive Financial Records).</p>
+                <p><strong>Missing Invoice/Overinvoiced:</strong> Total Invoices minus Total Costs. Negative (red) = missing invoices; positive = overinvoiced.</p>
                 <p><strong>Remaining Budget:</strong> PO Coverage minus Total Costs.</p>
-                
+
                 <h3>Charts</h3>
-                <p><strong>Amount by Project:</strong> Shows total amounts (POs, Invoices, Costs) grouped by project.</p>
-                <p><strong>Timeline:</strong> Displays monthly costs and remaining budget over time.</p>
+                <p><strong>Amount by Project:</strong> Shows PO Coverage, Costs, Invoices, Deferment, and Remaining Budget grouped by project.</p>
+                <p><strong>Timeline:</strong> Monthly costs and cumulative remaining budget over time.</p>
                 <p><strong>Monthly Working Time Summary:</strong> Aggregated hours and costs by month.</p>
-                <p><strong>Budget Forecast:</strong> Projects future budget trends based on average monthly costs from the last 2 months.</p>
-                
+                <p><strong>Budget Forecast:</strong> Projects future budget trends based on average monthly costs from the last 2 months. Green = positive forecast, orange = negative.</p>
+
+                <h3>Data Table</h3>
+                <p>The data table shows all records with the following features:</p>
+                <ul>
+                    <li><strong>Pagination:</strong> Choose page size (25, 50, 100, 250, or All rows) to control how many records are displayed at once.</li>
+                    <li><strong>Sheet Filter:</strong> Filter the table to show records from a specific Excel sheet/tab.</li>
+                    <li><strong>Search:</strong> Full-text search across all fields.</li>
+                    <li><strong>Comments:</strong> Records with comments show a blue dot (&bull;) next to the amount. Hover over the row to see the full comment. Comments come from both a dedicated Comment column and cell-level Excel comments (sticky notes).</li>
+                    <li><strong>Export:</strong> Export filtered data to CSV (includes Sheet and Comment columns).</li>
+                </ul>
+
                 <h3>Project Details</h3>
                 <p>Each project card shows detailed financial information including:</p>
                 <ul>
                     <li><strong>PO Coverage:</strong> Total Purchase Order coverage for the project</li>
-                    <li><strong>Total Costs:</strong> Sum of all cost types</li>
+                    <li><strong>Total Costs:</strong> Sum of all cost types (Working Time + Purchase + T&amp;L)</li>
+                    <li><strong>Closure Date:</strong> Project end date (from Closure events)</li>
+                    <li><strong>EAC (Estimated At Completion):</strong> Forecasted remaining budget at closure</li>
                     <li><strong>Invoices:</strong> Total invoiced amounts</li>
-                    <li><strong>Missing Invoice/Overinvoiced:</strong> Difference between Total Invoices and Total Costs. Negative values (shown in red) indicate missing invoices (not enough invoiced), positive values indicate overinvoicing</li>
+                    <li><strong>Missing Invoice/Overinvoiced:</strong> Total Invoices minus Total Costs</li>
                     <li><strong>Remaining Budget:</strong> Current budget status (green if positive, red if negative)</li>
-                    <li><strong>Working Time Costs:</strong> Costs from working time entries</li>
-                    <li><strong>Purchase Costs:</strong> Costs from purchase events</li>
-                    <li><strong>T&L Costs:</strong> Travel and Logistics costs</li>
-                    <li><strong>Deferment:</strong> Positive deferment adds to PO coverage and counts as invoiced. Negative deferment reduces PO coverage. Deferment is not included in costs.</li>
-                    <li><strong>Financial Record:</strong> Positive amounts count as invoiced (marking amounts that will be invoiced later). Negative amounts reduce PO coverage (decreasing the budget). Not included in costs.</li>
+                    <li><strong>Working Time / Purchase / T&amp;L Costs:</strong> Breakdown by cost type</li>
+                    <li><strong>Deferment:</strong> Positive adds to PO coverage and counts as invoiced. Negative reduces PO coverage. Not a cost.</li>
+                    <li><strong>Financial Record:</strong> Positive counts as invoiced. Negative reduces PO coverage. Not a cost.</li>
                     <li><strong>Monthly Cost Forecast Rate:</strong> Average monthly cost used for budget forecasting</li>
                 </ul>
-                
+
                 <h3>Status Indicators</h3>
                 <p><strong>Green box:</strong> Forecasted budget is positive</p>
                 <p><strong>Yellow box:</strong> Forecasted budget is slightly negative (only in last month and within 10% of project budget)</p>
                 <p><strong>Red box:</strong> Forecasted budget is significantly negative (beyond 10% threshold or current budget already negative)</p>
-                
+
                 <h3>Filters</h3>
                 <p>Use the filter section to filter data by date range, project, or event type. Quick filters are available for financial years, quarters, and months.</p>
             </div>
@@ -192,9 +218,19 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
         <!-- Data Table -->
         <div class="table-section">
-            <h2>Data Table</h2>
+            <h2>Data Table <span id="tableRecordCount" style="font-size: 0.7em; color: #888; font-weight: normal;"></span></h2>
             <div class="table-controls">
                 <input type="text" id="searchInput" placeholder="Search..." />
+                <select id="tableSheetFilter" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95em;">
+                    <option value="all">All Sheets</option>
+                </select>
+                <select id="tablePageSize" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95em;">
+                    <option value="25">25 rows</option>
+                    <option value="50" selected>50 rows</option>
+                    <option value="100">100 rows</option>
+                    <option value="250">250 rows</option>
+                    <option value="all">All rows</option>
+                </select>
                 <button id="exportBtn" class="btn-primary">Export to CSV</button>
             </div>
             <div class="table-wrapper">
@@ -205,6 +241,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             <th>Date</th>
                             <th>Event Type</th>
                             <th>Project</th>
+                            <th>Sheet</th>
                             <th>Hourly Rate</th>
                             <th>Additional Rate</th>
                             <th>Hours</th>
@@ -214,6 +251,11 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     <tbody id="tableBody">
                     </tbody>
                 </table>
+            </div>
+            <div class="table-pagination" id="tablePagination">
+                <button class="btn-secondary btn-sm" id="prevPage" disabled>&laquo; Previous</button>
+                <span id="pageInfo" style="padding: 6px 12px; color: #555;"></span>
+                <button class="btn-secondary btn-sm" id="nextPage">&raquo; Next</button>
             </div>
         </div>
 
@@ -281,6 +323,12 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 $('#dateTo').val(dates[dates.length - 1]);
             }}
             
+            // Populate sheet filter dropdown
+            const sheets = [...new Set(allData.map(r => r.sheet).filter(Boolean))].sort();
+            sheets.forEach(s => {{
+                $('#tableSheetFilter').append($('<option>').val(s).text(s));
+            }});
+
             renderTable(allData);
             renderCharts(allData);
             renderProjectDetails(allData);
@@ -290,19 +338,46 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             // Filter handlers
             $('#eventTypeFilter, #dateFrom, #dateTo').on('change', applyFilters);
             $('#clearFilters').on('click', clearFilters);
-            
+
             // Initialize quick filters
             initializeQuickFilters();
-            $('#searchInput').on('keyup', function() {{
-                const searchTerm = $(this).val().toLowerCase();
-                const filtered = filteredData.filter(row => {{
-                    return Object.values(row).some(val => 
-                        String(val).toLowerCase().includes(searchTerm)
-                    );
-                }});
-                renderTable(filtered);
+
+            // Table search — also respects sheet filter
+            function applyTableFilters() {{
+                const searchTerm = $('#searchInput').val().toLowerCase();
+                const sheetFilter = $('#tableSheetFilter').val();
+                let tableData = filteredData;
+                if (sheetFilter !== 'all') {{
+                    tableData = tableData.filter(row => row.sheet === sheetFilter);
+                }}
+                if (searchTerm) {{
+                    tableData = tableData.filter(row => {{
+                        return Object.values(row).some(val =>
+                            String(val).toLowerCase().includes(searchTerm)
+                        );
+                    }});
+                }}
+                renderTable(tableData);
+            }}
+            $('#searchInput').on('keyup', applyTableFilters);
+            $('#tableSheetFilter').on('change', applyTableFilters);
+
+            // Pagination controls
+            $('#prevPage').on('click', function() {{
+                if (currentPage > 1) {{
+                    currentPage--;
+                    renderTablePage();
+                }}
             }});
-            
+            $('#nextPage').on('click', function() {{
+                currentPage++;
+                renderTablePage();
+            }});
+            $('#tablePageSize').on('change', function() {{
+                currentPage = 1;
+                renderTablePage();
+            }});
+
             $('#exportBtn').on('click', exportToCSV);
         }});
         
@@ -690,26 +765,40 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             $('#totalHours').text(totalHours.toLocaleString('en-US', {{minimumFractionDigits: 2, maximumFractionDigits: 2}}));
         }}
         
-        function renderTable(data) {{
+        // Table pagination state
+        let currentTableData = [];
+        let currentPage = 1;
+
+        function getPageSize() {{
+            const val = $('#tablePageSize').val();
+            return val === 'all' ? Infinity : parseInt(val);
+        }}
+
+        function renderTablePage() {{
             const tbody = $('#tableBody');
             tbody.empty();
-            
-            // Sort by date (ascending)
-            const sortedData = [...data].sort((a, b) => {{
-                const dateA = a.date || '';
-                const dateB = b.date || '';
-                return dateA.localeCompare(dateB);
-            }});
-            
-            sortedData.forEach(row => {{
+
+            const pageSize = getPageSize();
+            const totalRows = currentTableData.length;
+            const totalPages = pageSize === Infinity ? 1 : Math.max(1, Math.ceil(totalRows / pageSize));
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIdx = pageSize === Infinity ? 0 : (currentPage - 1) * pageSize;
+            const endIdx = pageSize === Infinity ? totalRows : Math.min(startIdx + pageSize, totalRows);
+            const pageData = currentTableData.slice(startIdx, endIdx);
+
+            pageData.forEach(row => {{
+                const hasComment = row.comment && row.comment.length > 0;
                 const tr = $('<tr>');
+                if (hasComment) tr.addClass('has-comment');
+
                 tr.append($('<td>').text(row.index || ''));
                 tr.append($('<td>').text(row.date || ''));
                 tr.append($('<td>').text(row.event_type || ''));
                 tr.append($('<td>').text(row.project || ''));
+                tr.append($('<td>').text(row.sheet || ''));
                 tr.append($('<td>').text(formatEUR(row.hourly_rate)));
-                // Display additional_rate as percentage (multiply by 100 if it's in decimal format)
-                // For values >= 100, remove decimals
                 let additionalRateDisplay = '';
                 if (row.additional_rate !== null && row.additional_rate !== undefined) {{
                     const percentage = row.additional_rate * 100;
@@ -717,13 +806,44 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }}
                 tr.append($('<td>').text(additionalRateDisplay));
                 tr.append($('<td>').text(row.hours ? row.hours.toFixed(2) : ''));
-                // Show calculated cost for Working Time, otherwise show amount
-                const displayAmount = (row.event_type === 'Working Time' && row.calculated_cost) 
-                    ? row.calculated_cost 
+                const displayAmount = (row.event_type === 'Working Time' && row.calculated_cost)
+                    ? row.calculated_cost
                     : (row.amount || 0);
-                tr.append($('<td>').text(formatEUR(displayAmount)));
+
+                // Last cell: amount + comment tooltip
+                const amountTd = $('<td>').addClass('comment-cell');
+                amountTd.append($('<span>').text(formatEUR(displayAmount)));
+                if (hasComment) {{
+                    amountTd.append($('<span>').addClass('comment-indicator').attr('title', row.comment));
+                    amountTd.append($('<div>').addClass('comment-tooltip').text(row.comment));
+                }}
+                tr.append(amountTd);
                 tbody.append(tr);
             }});
+
+            // Update pagination controls
+            $('#prevPage').prop('disabled', currentPage <= 1);
+            $('#nextPage').prop('disabled', currentPage >= totalPages);
+            $('#pageInfo').text(totalRows === 0 ? 'No records' : `Page ${{currentPage}} of ${{totalPages}} (${{totalRows}} records)`);
+            $('#tableRecordCount').text(`(${{totalRows}} records)`);
+
+            // Show/hide pagination when all rows shown
+            if (pageSize === Infinity || totalPages <= 1) {{
+                $('#tablePagination').hide();
+            }} else {{
+                $('#tablePagination').show();
+            }}
+        }}
+
+        function renderTable(data) {{
+            // Sort by date (ascending)
+            currentTableData = [...data].sort((a, b) => {{
+                const dateA = a.date || '';
+                const dateB = b.date || '';
+                return dateA.localeCompare(dateB);
+            }});
+            currentPage = 1;
+            renderTablePage();
         }}
         
         function renderCharts(data) {{
@@ -2138,16 +2258,17 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         }}
         
         function exportToCSV() {{
-            const headers = ['#', 'Date', 'Event Type', 'Project', 'Hourly Rate', 'Additional Rate', 'Hours', 'Amount', 'Calculated Cost'];
+            const headers = ['#', 'Date', 'Event Type', 'Project', 'Sheet', 'Hourly Rate', 'Additional Rate', 'Hours', 'Amount', 'Calculated Cost', 'Comment'];
             const rows = filteredData.map(row => {{
-                const displayAmount = (row.event_type === 'Working Time' && row.calculated_cost) 
-                    ? row.calculated_cost 
+                const displayAmount = (row.event_type === 'Working Time' && row.calculated_cost)
+                    ? row.calculated_cost
                     : (row.amount || '');
                 return [
                     row.index || '',
                     row.date || '',
                     row.event_type || '',
                     row.project || '',
+                    row.sheet || '',
                     formatEUR(row.hourly_rate).replace('€', '') || '',
                     (() => {{
                         if (row.additional_rate !== null && row.additional_rate !== undefined) {{
@@ -2158,7 +2279,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     }})(),
                     row.hours || '',
                     formatEUR(displayAmount).replace('€', '') || '',
-                    (row.event_type === 'Working Time' && row.calculated_cost) ? formatEUR(row.calculated_cost).replace('€', '') : ''
+                    (row.event_type === 'Working Time' && row.calculated_cost) ? formatEUR(row.calculated_cost).replace('€', '') : '',
+                    (row.comment || '').replace(/"/g, '""')
                 ];
             }});
             
