@@ -137,53 +137,48 @@ def get_css():
         opacity: 0.9;
         }
 
-        /* Theme toggle */
-        .theme-toggle {
+        /* Toolbar strip – fixed right edge */
+        .toolbar-strip {
         position: fixed;
-        top: 20px;
-        right: 62px;
-        width: 35px;
-        height: 35px;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         background: var(--color-primary);
+        border-radius: 8px 0 0 8px;
+        box-shadow: -2px 2px 10px rgba(0,0,0,0.18);
+        z-index: 1000;
+        padding: 6px 4px;
+        gap: 2px;
+        }
+
+        .toolbar-btn {
+        width: 34px;
+        height: 34px;
+        background: transparent;
         color: white;
         border: none;
-        border-radius: 50%;
+        border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         font-size: 18px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        z-index: 1000;
-        transition: background 0.3s;
-        }
-
-        .theme-toggle:hover {
-        background: var(--color-primary-hover);
-        }
-
-        .help-icon {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        width: 35px;
-        height: 35px;
-        background: var(--color-primary);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 20px;
         font-weight: bold;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        z-index: 1000;
-        transition: background 0.3s;
+        transition: background 0.2s;
         }
 
-        .help-icon:hover {
-        background: var(--color-primary-hover);
+        .toolbar-btn:hover {
+        background: rgba(255,255,255,0.2);
+        }
+
+        .toolbar-divider {
+        width: 22px;
+        height: 1px;
+        background: rgba(255,255,255,0.35);
+        margin: 2px 0;
         }
 
         .help-modal {
