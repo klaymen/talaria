@@ -147,7 +147,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             </div>
             <div class="summary-card">
                 <h3>Total Hours</h3>
-                <div class="summary-value" id="totalHours">{total_hours:,.2f}</div>
+                <div class="summary-value" id="totalHours">{total_hours:,.0f}</div>
             </div>
         </div>
 
@@ -873,7 +873,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 coverageGapElement.css('color', '');
             }}
             $('#remainingBudget').text(formatEUR(remainingBudget));
-            $('#totalHours').text(totalHours.toLocaleString('en-US', {{minimumFractionDigits: 2, maximumFractionDigits: 2}}));
+            $('#totalHours').text(totalHours.toLocaleString('en-US', {{minimumFractionDigits: 0, maximumFractionDigits: 0}}));
         }}
         
         // Table pagination and sorting state
@@ -916,7 +916,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     additionalRateDisplay = percentage >= 100 ? Math.round(percentage) + '%' : percentage.toFixed(2) + '%';
                 }}
                 tr.append($('<td>').text(additionalRateDisplay));
-                tr.append($('<td>').text(row.hours ? row.hours.toFixed(2) : ''));
+                tr.append($('<td>').text(row.hours ? row.hours.toFixed(1) : ''));
                 const displayAmount = (row.event_type === 'Working Time' && row.calculated_cost)
                     ? row.calculated_cost
                     : (row.amount || 0);
@@ -2168,7 +2168,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const data = monthlySummary[month];
                 const tr = $('<tr>');
                 tr.append($('<td>').text(month));
-                tr.append($('<td>').text(data.hours.toFixed(2)));
+                tr.append($('<td>').text(data.hours.toFixed(1)));
                 tr.append($('<td>').text(formatEUR(data.cost)));
                 tr.append($('<td>').text(Array.from(data.projects).join(', ')));
                 tbody.append(tr);
@@ -2485,7 +2485,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             </div>
                             <div class="project-stat">
                                 <div class="project-stat-label">Total Hours</div>
-                                <div class="project-stat-value">${{stats.totalHours.toFixed(2)}}</div>
+                                <div class="project-stat-value">${{stats.totalHours.toFixed(1)}}</div>
                             </div>
                             <div class="project-stat">
                                 <div class="project-stat-label">Burndown Rate</div>
