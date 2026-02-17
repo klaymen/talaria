@@ -13,12 +13,12 @@ A Python tool that reads Excel files containing project tracking data and genera
   - PO (Purchase Orders) represent coverage/budget for projects
   - Invoices are tracked as informational (not a cost)
   - Purchases and T&L are tracked as costs
-  - Deferment: positive adds to PO coverage and counts as invoiced, negative reduces PO coverage
-  - Financial Record: positive counts as invoiced (for future invoicing), negative reduces PO coverage
+  - Deferment: positive adds to budget and counts as invoiced, negative reduces budget
+  - Financial Record: positive is used for the Coverage calculation, negative reduces budget
   - Remaining budget calculation per project
 - **Comments**: Supports both a dedicated Comment column and cell-level Excel comments (sticky notes), displayed as tooltips on hover in the data table
 - **Visualizations**: Multiple charts including:
-  - Amount by Project (PO Coverage, Costs, Invoices, Deferment, Remaining Budget)
+  - Amount by Project (Budget, Costs, Invoices, Deferment, Remaining Budget)
   - Hours by Project (bar chart)
   - Timeline (monthly costs and remaining budget)
   - Budget Forecast (with actual and forecasted data)
@@ -38,7 +38,8 @@ A Python tool that reads Excel files containing project tracking data and genera
 - **Project Details**: Detailed financial statistics for each project including:
   - Status indicators (green/yellow/red) based on forecasted budget
   - Closure date and EAC (Estimated At Completion)
-  - Monthly cost forecast rate
+  - Coverage ratio (Cost / (Invoiced + Positive Financial Record)) shown next to the project name
+  - Burndown Rate (average monthly cost)
 - **Monthly Summary**: Monthly breakdown of Working Time hours and costs
 - **Budget Forecast**: Projects future budget trends based on average monthly costs
 
@@ -94,12 +95,12 @@ The input Excel file can contain **multiple sheets/tabs** — all sheets are rea
 | Event Type | Description |
 |---|---|
 | **Working Time** | Work hours. Cost = hours × hourly rate × (1 + additional rate). Not entered as Amount. |
-| **PO** | Purchase Order. Adds to the project budget (PO Coverage). |
+| **PO** | Purchase Order. Adds to the project budget. |
 | **Invoice** | Invoiced amount. Informational only — not a cost. Used for Missing Invoice calculation. |
 | **Purchase** | Direct cost (e.g. software licenses, hardware). |
 | **T&L** | Travel & Logistics cost. |
-| **Deferment** | Positive: adds to PO coverage and counts as invoiced. Negative: reduces PO coverage. Not a cost. |
-| **Financial Record** | Positive: counts as invoiced (for future invoicing, avoids showing as uninvoiced). Negative: reduces PO coverage (budget decrease). Not a cost. |
+| **Deferment** | Positive: adds to budget and counts as invoiced. Negative: reduces budget. Not a cost. |
+| **Financial Record** | Positive: used in Coverage calculation (Cost / (Invoiced + Positive Financial Record)), *not* counted as invoiced. Negative: reduces budget. Not a cost. |
 | **Closure** | Marks the project end date. The budget forecast extends to this month. |
 
 ### Example Data
@@ -125,11 +126,11 @@ In addition to the Comment column, the dashboard also reads **cell-level Excel c
 ### Summary Cards
 - **Cost/Invoiced**: Ratio of total invoices to total costs as a percentage
 - **Total Projects**: Number of unique projects
-- **PO Coverage**: Total budget from Purchase Orders (adjusted by Deferment and negative Financial Records)
+- **Budget**: Total budget from Purchase Orders (adjusted by Deferment and negative Financial Records)
 - **Total Costs**: Working Time + Purchases + T&L
-- **Total Invoices**: Invoice + positive Deferment + positive Financial Record amounts
+- **Total Invoices**: Invoice + positive Deferment amounts (positive Financial Records are *not* included in invoices)
 - **Missing Invoice/Overinvoiced**: Total Invoices minus Total Costs
-- **Remaining Budget**: PO Coverage minus Total Costs
+- **Remaining Budget**: Budget minus Total Costs
 - **Total Hours**: Sum of all hours
 
 ### Filters
@@ -140,7 +141,7 @@ In addition to the Comment column, the dashboard also reads **cell-level Excel c
 - Clear all filters
 
 ### Charts
-- **Amount by Project**: Bar chart showing PO Coverage, Costs, Invoices, Deferment, and Remaining Budget per project
+- **Amount by Project**: Bar chart showing Budget, Costs, Invoices, Deferment, and Remaining Budget per project
 - **Hours by Project**: Bar chart showing total hours per project
 - **Timeline**: Line chart showing monthly costs and cumulative remaining budget over time
 - **Budget Forecast**: Line chart showing actual and forecasted remaining budget, with color-coded forecast (green for positive, orange for negative)
@@ -158,7 +159,7 @@ In addition to the Comment column, the dashboard also reads **cell-level Excel c
 ### Project Details
 - Detailed financial statistics for each project:
   - Status indicator (green/yellow/red box) based on forecasted budget
-  - PO Coverage
+  - Budget
   - Total Costs (broken down by Working Time, Purchases, T&L)
   - Invoices
   - Missing Invoice/Overinvoiced
@@ -208,18 +209,18 @@ This structure makes it easy to:
 
 - **Multi-Sheet Support**: All sheets/tabs in the Excel file are read. Records from every sheet are merged and each record tracks which sheet it came from.
 - **Working Time Cost Calculation**: For "Working Time" events, the cost is automatically calculated as `hours × hourly_rate × (1 + additional_rate)`. This calculated cost is displayed instead of the Amount field for Working Time events.
-- **PO Coverage**: Purchase Orders (PO) represent the total budget/coverage available for a project.
-- **Invoices**: Invoice amounts are informational — they track how much has been billed but do not affect costs or PO coverage directly.
+- **Budget**: Purchase Orders (PO) represent the total budget/coverage available for a project.
+- **Invoices**: Invoice amounts are informational — they track how much has been billed but do not affect costs or budget directly.
 - **Costs**: Working Time (calculated), Purchases, and T&L reduce the remaining budget. Deferment and Financial Record are NOT costs.
-- **Deferment**: Positive deferment adds to PO coverage and counts as invoiced. Negative deferment reduces PO coverage.
-- **Financial Record**: Positive amounts count as invoiced (marking future invoices so they don't appear as uninvoiced). Negative amounts reduce PO coverage (budget decrease).
+- **Deferment**: Positive deferment adds to budget and counts as invoiced. Negative deferment reduces budget.
+- **Financial Record**: Positive amounts are used in the Coverage calculation (`Cost / (Invoiced + Positive Financial Record)`) and are *not* counted as invoiced. Negative amounts reduce budget (budget decrease).
 - **Closure**: A special event type that marks the end of a project. The forecast extends to the closure date + 1 month for individual projects.
 - **Forecast Logic**: The forecast uses the average monthly cost from the last 2 months to project future budget. For "All Projects" view, it sums individual project forecasts.
 - **Status Indicators**: Color-coded boxes (green/yellow/red) show forecasted budget status:
   - Green: Forecasted budget is positive
   - Yellow: Forecasted budget is slightly negative (within 10% of project budget)
   - Red: Forecasted budget is significantly negative (beyond 10% threshold)
-- **Remaining Budget**: Calculated as `PO Coverage - Total Costs`. Negative values indicate over-budget situations.
+- **Remaining Budget**: Calculated as `Budget - Total Costs`. Negative values indicate over-budget situations.
 - **Date Range**: The date filters are automatically set to the first and last event dates in the data.
 - The script automatically handles various date formats
 - Currency symbols (€, $) and formatting (commas) are automatically parsed

@@ -691,6 +691,16 @@ def get_css():
         .project-card h3 {
         color: var(--color-primary);
         margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        }
+
+        .project-coverage {
+        font-size: 0.65em;
+        font-weight: 500;
+        color: var(--color-text-muted);
         }
 
         .project-stats {

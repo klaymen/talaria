@@ -52,7 +52,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     <li><strong>T&amp;L:</strong> Travel &amp; Logistics costs.</li>
                     <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a cost, not added to the budget. Used for the Missing Invoice / Overinvoiced calculation.</li>
                     <li><strong>Deferment:</strong> Positive deferment adds to the budget and counts as invoiced. Negative deferment reduces the budget. Not included in costs.</li>
-                    <li><strong>Financial Record:</strong> Positive amounts count as invoiced (marking amounts that will be invoiced later, so they don&rsquo;t appear as uninvoiced). Negative amounts reduce the budget. Not included in costs.</li>
+                    <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage calculation (Cost&nbsp;/&nbsp;(Invoiced&nbsp;+&nbsp;Positive&nbsp;Financial&nbsp;Record)) but are <em>not</em> counted as invoiced. Negative amounts reduce the budget. Not included in costs.</li>
                     <li><strong>Closure:</strong> Marks the project end date. The budget forecast extends to the closure month.</li>
                 </ul>
 
@@ -61,9 +61,10 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <p><strong>Total Projects:</strong> Number of unique projects in the dataset.</p>
                 <p><strong>Budget:</strong> Total Purchase Order coverage across all projects (includes positive Deferment and is reduced by negative Deferment and negative Financial Records).</p>
                 <p><strong>Total Costs:</strong> Sum of Working Time + Purchases + T&amp;L. Deferment and Financial Record are not costs.</p>
-                <p><strong>Total Invoices:</strong> Total invoiced amounts (includes Invoice events, positive Deferment, and positive Financial Records).</p>
+                <p><strong>Total Invoices:</strong> Total invoiced amounts (includes Invoice events and positive Deferment). Positive Financial Records are <em>not</em> counted as invoiced.</p>
                 <p><strong>Missing Invoice/Overinvoiced:</strong> Total Invoices minus Total Costs. Negative (red) = missing invoices; positive = overinvoiced.</p>
                 <p><strong>Remaining Budget:</strong> Budget minus Total Costs.</p>
+                <p><strong>Coverage:</strong> Shown next to each project name. Calculated as <em>Total Costs / (Invoiced + Positive Financial Record)</em>. This ratio indicates how much of the invoiced-or-planned amount has actually been spent. Positive Financial Records represent amounts that are expected to be invoiced in the future, so they widen the denominator without affecting costs or the invoice totals.</p>
 
                 <h3>Charts</h3>
                 <p><strong>Amount by Project:</strong> Shows Budget, Costs, Invoices, Deferment, and Remaining Budget grouped by project.</p>
@@ -95,8 +96,9 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     <li><strong>Remaining Budget:</strong> Current budget status (green if positive, red if negative)</li>
                     <li><strong>Working Time / Purchase / T&amp;L Costs:</strong> Breakdown by cost type</li>
                     <li><strong>Deferment:</strong> Positive adds to the budget and counts as invoiced. Negative reduces the budget. Not a cost.</li>
-                    <li><strong>Financial Record:</strong> Positive counts as invoiced. Negative reduces the budget. Not a cost.</li>
-                    <li><strong>Monthly Cost Forecast Rate:</strong> Average monthly cost used for budget forecasting</li>
+                    <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage ratio. Negative reduces the budget. Not a cost.</li>
+                    <li><strong>Coverage:</strong> Shown next to the project name. Calculated as Cost / (Invoiced + Positive Financial Record).</li>
+                    <li><strong>Burndown Rate:</strong> Average monthly cost used for budget forecasting</li>
                 </ul>
 
                 <h3>Status Indicators</h3>
@@ -777,6 +779,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             let tlCosts = 0;
             let deferment = 0;
             let financialRecord = 0;
+            let positiveFinancialRecord = 0;
 
             data.forEach(row => {{
                 const eventType = row.event_type || '';
@@ -805,15 +808,14 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }} else if (eventType === 'Financial Record') {{
                     financialRecord += amount;
                     if (amount > 0) {{
-                        // Positive: count as invoiced (will be invoiced later)
-                        invoices += amount;
+                        positiveFinancialRecord += amount;
                     }} else if (amount < 0) {{
                         // Negative: decrease budget (like negative deferment)
                         poCoverage += amount;
                     }}
                 }}
             }});
-            
+
             // Total costs = Working Time + Purchase + T&L (Deferment is NOT a cost)
             const totalCosts = workingTimeCosts + purchaseCosts + tlCosts;
             // Remaining budget = PO Coverage - Total Costs (invoices are informational only)
@@ -1018,11 +1020,9 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     }}
                 }}
 
-                // Financial Record: positive counts as invoiced, negative reduces PO coverage
+                // Financial Record: negative reduces PO coverage; positive is used for Coverage ratio only
                 if (eventType === 'Financial Record' && amount) {{
-                    if (amount > 0) {{
-                        projectInvoices[project] = (projectInvoices[project] || 0) + amount;
-                    }} else if (amount < 0) {{
+                    if (amount < 0) {{
                         projectPOCoverage[project] = (projectPOCoverage[project] || 0) + amount;
                     }}
                 }}
@@ -2175,6 +2175,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         tlCosts: 0,
                         deferment: 0,
                         financialRecord: 0,
+                        positiveFinancialRecord: 0,
                         totalHours: 0,
                         eventTypes: new Set(),
                         events: []
@@ -2207,8 +2208,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }} else if (eventType === 'Financial Record') {{
                     projectStats[project].financialRecord += amount;
                     if (amount > 0) {{
-                        // Positive: count as invoiced (will be invoiced later)
-                        projectStats[project].invoices += amount;
+                        projectStats[project].positiveFinancialRecord += amount;
                     }} else if (amount < 0) {{
                         // Negative: decrease budget (like negative deferment)
                         projectStats[project].poCoverage += amount;
@@ -2391,12 +2391,21 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const eacColor = (forecast && forecast.closureBudget !== null && forecast.closureBudget !== undefined && forecast.closureBudget < 0) ? 'var(--color-negative)' : '';
                 const eacStyle = eacColor ? `style="color: ${{eacColor}}"` : '';
                 
+                // Coverage = Cost / (Invoiced + Positive Financial Record)
+                const coverageDenom = stats.invoices + stats.positiveFinancialRecord;
+                let coverageFormatted = '-';
+                if (coverageDenom > 0 && totalCosts > 0) {{
+                    coverageFormatted = (totalCosts / coverageDenom * 100).toFixed(1) + '%';
+                }} else if (totalCosts === 0 && coverageDenom >= 0) {{
+                    coverageFormatted = '0%';
+                }}
+
                 const statusIndicator = `<div class="project-status-indicator ${{statusClass}}" data-tooltip="${{tooltipText}}"></div>`;
-                
+
                 const card = $(`
                     <div class="project-card">
                         ${{statusIndicator}}
-                        <h3>${{project}}</h3>
+                        <h3>${{project}} <span class="project-coverage">Coverage ${{coverageFormatted}}</span></h3>
                         <div class="project-stats">
                             <div class="project-stat cost-highlight">
                                 <div class="project-stat-label">Budget</div>
@@ -2447,7 +2456,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                                 <div class="project-stat-value">${{stats.totalHours.toFixed(2)}}</div>
                             </div>
                             <div class="project-stat">
-                                <div class="project-stat-label">Monthly Cost Forecast Rate</div>
+                                <div class="project-stat-label">Burndown Rate</div>
                                 <div class="project-stat-value">${{forecastRateFormatted}}</div>
                             </div>
                             <div class="project-stat">
