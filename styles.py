@@ -348,54 +348,54 @@ def get_css():
 
         .filters-section {
         background: var(--color-surface);
-        padding: 25px;
+        padding: 14px 18px;
         border-radius: 10px;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
         box-shadow: var(--shadow-sm);
         }
 
         .filters {
         display: flex;
         flex-wrap: wrap;
-        gap: 20px;
+        gap: 12px;
         align-items: end;
         }
 
         .filter-group {
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 3px;
         }
 
         .filter-group label {
         font-weight: 600;
         color: var(--color-text-secondary);
-        font-size: 0.9em;
+        font-size: 0.8em;
         }
 
         .filter-group select,
         .filter-group input {
-        padding: 8px 12px;
+        padding: 5px 10px;
         border: 1px solid var(--color-border);
-        border-radius: 5px;
-        font-size: 0.95em;
+        border-radius: 4px;
+        font-size: 0.85em;
         background: var(--color-surface);
         color: var(--color-text);
         }
 
         .filter-group select {
-        min-width: 200px;
-        height: 38px;
+        min-width: 160px;
+        height: 32px;
         }
 
         .btn-secondary {
-        padding: 10px 20px;
+        padding: 6px 14px;
         background: #6c757d;
         color: white;
         border: none;
-        border-radius: 5px;
+        border-radius: 4px;
         cursor: pointer;
-        font-size: 0.95em;
+        font-size: 0.85em;
         }
 
         .btn-secondary:hover {
@@ -403,42 +403,45 @@ def get_css():
         }
 
         .quick-filters {
-        margin-top: 25px;
-        padding-top: 25px;
-        border-top: 2px solid var(--color-border-light);
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--color-border-light);
         }
 
         .quick-filters h3 {
-        margin-bottom: 15px;
-        color: var(--color-text);
-        font-size: 1.1em;
+        display: none;
         }
 
         .quick-filter-group {
-        margin-bottom: 20px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
         }
 
         .quick-filter-group label {
-        display: block;
         font-weight: 600;
         color: var(--color-text-secondary);
-        font-size: 0.9em;
-        margin-bottom: 10px;
+        font-size: 0.8em;
+        margin: 0;
+        white-space: nowrap;
+        min-width: 70px;
         }
 
         .quick-filter-buttons {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 5px;
         }
 
         .quick-filter-btn {
-        padding: 8px 16px;
+        padding: 4px 10px;
         background: var(--color-surface-alt);
         color: var(--color-text-secondary);
         border: 1px solid var(--color-border);
-        border-radius: 5px;
-        font-size: 0.9em;
+        border-radius: 4px;
+        font-size: 0.8em;
         cursor: pointer;
         transition: all 0.2s;
         }
@@ -785,6 +788,11 @@ def get_css():
 
         .filters {
         flex-direction: column;
+        }
+
+        .quick-filter-group {
+        flex-direction: column;
+        align-items: flex-start;
         }
 
         .chart-container {
