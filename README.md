@@ -28,6 +28,8 @@ A Python tool that reads Excel files containing project tracking data and genera
   - Filter by date range (auto-set to data range)
   - Quick filters for financial years, quarters, and months
 - **Data Table**:
+  - Event type filter dropdown (filter by Working Time, PO, Invoice, etc.)
+  - Column sorting (click headers to sort ascending/descending)
   - Paginated display (25, 50, 100, 250, or all rows)
   - Sheet filter to show records from specific tabs
   - Full-text search across all fields
@@ -144,6 +146,8 @@ In addition to the Comment column, the dashboard also reads **cell-level Excel c
 - **Budget Forecast**: Line chart showing actual and forecasted remaining budget, with color-coded forecast (green for positive, orange for negative)
 
 ### Data Table
+- Event type filter dropdown to show only specific event types (Working Time, PO, Invoice, etc.)
+- Column sorting: click any column header to sort ascending/descending (active sort shown with arrow indicator)
 - Paginated display with configurable page size (25, 50, 100, 250, or all)
 - Sheet filter dropdown to show records from a specific Excel tab
 - Full-text search across all fields

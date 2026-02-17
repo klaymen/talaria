@@ -507,6 +507,22 @@ def get_css():
         border-bottom: 2px solid #dee2e6;
         }
 
+        th.sortable {
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        }
+
+        th.sortable:hover {
+        background: #e9ecef;
+        color: #333;
+        }
+
+        .sort-indicator {
+        font-size: 0.75em;
+        color: #667eea;
+        }
+
         td {
         padding: 12px;
         border-bottom: 1px solid #dee2e6;
