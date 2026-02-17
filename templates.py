@@ -70,6 +70,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <h3>Data Table</h3>
                 <p>The data table shows all records with the following features:</p>
                 <ul>
+                    <li><strong>Event Type Filter:</strong> Filter the table by event type (Working Time, PO, Invoice, etc.) using the dropdown above the table.</li>
+                    <li><strong>Column Sorting:</strong> Click any column header to sort. Click again to toggle between ascending and descending order. The active sort column shows an arrow indicator.</li>
                     <li><strong>Pagination:</strong> Choose page size (25, 50, 100, 250, or All rows) to control how many records are displayed at once.</li>
                     <li><strong>Sheet Filter:</strong> Filter the table to show records from a specific Excel sheet/tab.</li>
                     <li><strong>Search:</strong> Full-text search across all fields.</li>
@@ -221,6 +223,9 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             <h2>Data Table <span id="tableRecordCount" style="font-size: 0.7em; color: #888; font-weight: normal;"></span></h2>
             <div class="table-controls">
                 <input type="text" id="searchInput" placeholder="Search..." />
+                <select id="tableEventTypeFilter" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95em;">
+                    <option value="all">All Types</option>
+                </select>
                 <select id="tableSheetFilter" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95em;">
                     <option value="all">All Sheets</option>
                 </select>
@@ -237,15 +242,15 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <table id="dataTable">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Date</th>
-                            <th>Event Type</th>
-                            <th>Project</th>
-                            <th>Sheet</th>
-                            <th>Hourly Rate</th>
-                            <th>Additional Rate</th>
-                            <th>Hours</th>
-                            <th>Amount/Cost</th>
+                            <th class="sortable" data-sort="index">#</th>
+                            <th class="sortable" data-sort="date">Date</th>
+                            <th class="sortable" data-sort="event_type">Event Type</th>
+                            <th class="sortable" data-sort="project">Project</th>
+                            <th class="sortable" data-sort="sheet">Sheet</th>
+                            <th class="sortable" data-sort="hourly_rate">Hourly Rate</th>
+                            <th class="sortable" data-sort="additional_rate">Additional Rate</th>
+                            <th class="sortable" data-sort="hours">Hours</th>
+                            <th class="sortable" data-sort="amount">Amount/Cost</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -342,13 +347,23 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             // Initialize quick filters
             initializeQuickFilters();
 
-            // Table search — also respects sheet filter
+            // Populate table event type filter
+            const tableEventTypes = [...new Set(allData.map(r => r.event_type).filter(Boolean))].sort();
+            tableEventTypes.forEach(et => {{
+                $('#tableEventTypeFilter').append($('<option>').val(et).text(et));
+            }});
+
+            // Table search — also respects sheet and event type filters
             function applyTableFilters() {{
                 const searchTerm = $('#searchInput').val().toLowerCase();
                 const sheetFilter = $('#tableSheetFilter').val();
+                const eventTypeFilter = $('#tableEventTypeFilter').val();
                 let tableData = filteredData;
                 if (sheetFilter !== 'all') {{
                     tableData = tableData.filter(row => row.sheet === sheetFilter);
+                }}
+                if (eventTypeFilter !== 'all') {{
+                    tableData = tableData.filter(row => row.event_type === eventTypeFilter);
                 }}
                 if (searchTerm) {{
                     tableData = tableData.filter(row => {{
@@ -361,6 +376,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             }}
             $('#searchInput').on('keyup', applyTableFilters);
             $('#tableSheetFilter').on('change', applyTableFilters);
+            $('#tableEventTypeFilter').on('change', applyTableFilters);
 
             // Pagination controls
             $('#prevPage').on('click', function() {{
@@ -765,9 +781,11 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             $('#totalHours').text(totalHours.toLocaleString('en-US', {{minimumFractionDigits: 2, maximumFractionDigits: 2}}));
         }}
         
-        // Table pagination state
+        // Table pagination and sorting state
         let currentTableData = [];
         let currentPage = 1;
+        let tableSortColumn = 'date';
+        let tableSortDirection = 'asc';
 
         function getPageSize() {{
             const val = $('#tablePageSize').val();
@@ -835,16 +853,60 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             }}
         }}
 
-        function renderTable(data) {{
-            // Sort by date (ascending)
-            currentTableData = [...data].sort((a, b) => {{
-                const dateA = a.date || '';
-                const dateB = b.date || '';
-                return dateA.localeCompare(dateB);
+        function sortTableData(data) {{
+            const col = tableSortColumn;
+            const dir = tableSortDirection === 'asc' ? 1 : -1;
+            const numericCols = ['index', 'hourly_rate', 'additional_rate', 'hours', 'amount'];
+            return [...data].sort((a, b) => {{
+                let valA, valB;
+                if (col === 'amount') {{
+                    valA = (a.event_type === 'Working Time' && a.calculated_cost) ? a.calculated_cost : (a.amount || 0);
+                    valB = (b.event_type === 'Working Time' && b.calculated_cost) ? b.calculated_cost : (b.amount || 0);
+                }} else {{
+                    valA = a[col];
+                    valB = b[col];
+                }}
+                if (numericCols.includes(col)) {{
+                    return ((valA || 0) - (valB || 0)) * dir;
+                }}
+                return String(valA || '').localeCompare(String(valB || '')) * dir;
             }});
+        }}
+
+        function updateSortIndicators() {{
+            $('#dataTable thead th.sortable').each(function() {{
+                const th = $(this);
+                const col = th.data('sort');
+                // Remove existing indicators
+                th.find('.sort-indicator').remove();
+                if (col === tableSortColumn) {{
+                    const arrow = tableSortDirection === 'asc' ? ' \u25B2' : ' \u25BC';
+                    th.append($('<span>').addClass('sort-indicator').text(arrow));
+                }}
+            }});
+        }}
+
+        function renderTable(data) {{
+            currentTableData = sortTableData(data);
             currentPage = 1;
+            updateSortIndicators();
             renderTablePage();
         }}
+
+        // Column sorting click handler
+        $(document).on('click', '#dataTable thead th.sortable', function() {{
+            const col = $(this).data('sort');
+            if (tableSortColumn === col) {{
+                tableSortDirection = tableSortDirection === 'asc' ? 'desc' : 'asc';
+            }} else {{
+                tableSortColumn = col;
+                tableSortDirection = 'asc';
+            }}
+            currentTableData = sortTableData(currentTableData);
+            currentPage = 1;
+            updateSortIndicators();
+            renderTablePage();
+        }});
         
         function renderCharts(data) {{
             // Financials by Project
