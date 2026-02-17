@@ -832,7 +832,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const amountTd = $('<td>').addClass('comment-cell');
                 amountTd.append($('<span>').text(formatEUR(displayAmount)));
                 if (hasComment) {{
-                    amountTd.append($('<span>').addClass('comment-indicator').attr('title', row.comment));
+                    amountTd.append($('<span>').addClass('comment-indicator'));
                     amountTd.append($('<div>').addClass('comment-tooltip').text(row.comment));
                 }}
                 tr.append(amountTd);
@@ -907,7 +907,44 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             updateSortIndicators();
             renderTablePage();
         }});
-        
+
+        // Position comment tooltips dynamically so they stay on-screen
+        $(document).on('mouseenter', 'tr.has-comment', function() {{
+            const tooltip = $(this).find('.comment-tooltip');
+            if (!tooltip.length) return;
+
+            // Temporarily show to measure
+            tooltip.css({{ display: 'block', visibility: 'hidden', top: 'auto', bottom: 'auto', left: 'auto' }});
+            tooltip.removeClass('tooltip-above tooltip-below');
+
+            const row = $(this)[0].getBoundingClientRect();
+            const ttHeight = tooltip.outerHeight();
+            const ttWidth = tooltip.outerWidth();
+            const margin = 8;
+
+            // Decide above or below
+            const spaceAbove = row.top;
+            const spaceBelow = window.innerHeight - row.bottom;
+            let top;
+            if (spaceAbove >= ttHeight + margin) {{
+                top = row.top - ttHeight - margin;
+                tooltip.addClass('tooltip-above');
+            }} else {{
+                top = row.bottom + margin;
+                tooltip.addClass('tooltip-below');
+            }}
+
+            // Horizontal: center on the row, but clamp to viewport
+            let left = row.left + (row.width / 2) - (ttWidth / 2);
+            left = Math.max(8, Math.min(left, window.innerWidth - ttWidth - 8));
+
+            tooltip.css({{ top: top + 'px', left: left + 'px', visibility: 'visible' }});
+        }});
+
+        $(document).on('mouseleave', 'tr.has-comment', function() {{
+            $(this).find('.comment-tooltip').css('display', 'none');
+        }});
+
         function renderCharts(data) {{
             // Financials by Project
             const projectPOCoverage = {{}};
