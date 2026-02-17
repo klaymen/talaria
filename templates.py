@@ -43,27 +43,27 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
                 <h3>Event Types</h3>
                 <ul>
-                    <li><strong>PO (Purchase Order):</strong> Adds to the project budget (PO Coverage).</li>
+                    <li><strong>PO (Purchase Order):</strong> Adds to the project budget.</li>
                     <li><strong>Working Time:</strong> A cost. Calculated as hours &times; hourly rate &times; (1 + additional rate). The calculated cost is shown instead of the Amount field.</li>
                     <li><strong>Purchase:</strong> A direct cost (e.g. software licenses, hardware).</li>
                     <li><strong>T&amp;L:</strong> Travel &amp; Logistics costs.</li>
-                    <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a cost, not added to PO coverage. Used for the Missing Invoice / Overinvoiced calculation.</li>
-                    <li><strong>Deferment:</strong> Positive deferment adds to PO coverage and counts as invoiced. Negative deferment reduces PO coverage. Not included in costs.</li>
-                    <li><strong>Financial Record:</strong> Positive amounts count as invoiced (marking amounts that will be invoiced later, so they don&rsquo;t appear as uninvoiced). Negative amounts reduce PO coverage (decreasing the budget). Not included in costs.</li>
+                    <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a cost, not added to the budget. Used for the Missing Invoice / Overinvoiced calculation.</li>
+                    <li><strong>Deferment:</strong> Positive deferment adds to the budget and counts as invoiced. Negative deferment reduces the budget. Not included in costs.</li>
+                    <li><strong>Financial Record:</strong> Positive amounts count as invoiced (marking amounts that will be invoiced later, so they don&rsquo;t appear as uninvoiced). Negative amounts reduce the budget. Not included in costs.</li>
                     <li><strong>Closure:</strong> Marks the project end date. The budget forecast extends to the closure month.</li>
                 </ul>
 
                 <h3>Summary Cards</h3>
                 <p><strong>Cost/Invoiced:</strong> Ratio of total invoices to total costs, expressed as a percentage.</p>
                 <p><strong>Total Projects:</strong> Number of unique projects in the dataset.</p>
-                <p><strong>PO Coverage:</strong> Total Purchase Order coverage across all projects (includes positive Deferment and is reduced by negative Deferment and negative Financial Records).</p>
+                <p><strong>Budget:</strong> Total Purchase Order coverage across all projects (includes positive Deferment and is reduced by negative Deferment and negative Financial Records).</p>
                 <p><strong>Total Costs:</strong> Sum of Working Time + Purchases + T&amp;L. Deferment and Financial Record are not costs.</p>
                 <p><strong>Total Invoices:</strong> Total invoiced amounts (includes Invoice events, positive Deferment, and positive Financial Records).</p>
                 <p><strong>Missing Invoice/Overinvoiced:</strong> Total Invoices minus Total Costs. Negative (red) = missing invoices; positive = overinvoiced.</p>
-                <p><strong>Remaining Budget:</strong> PO Coverage minus Total Costs.</p>
+                <p><strong>Remaining Budget:</strong> Budget minus Total Costs.</p>
 
                 <h3>Charts</h3>
-                <p><strong>Amount by Project:</strong> Shows PO Coverage, Costs, Invoices, Deferment, and Remaining Budget grouped by project.</p>
+                <p><strong>Amount by Project:</strong> Shows Budget, Costs, Invoices, Deferment, and Remaining Budget grouped by project.</p>
                 <p><strong>Timeline:</strong> Monthly costs and cumulative remaining budget over time.</p>
                 <p><strong>Monthly Working Time Summary:</strong> Aggregated hours and costs by month.</p>
                 <p><strong>Budget Forecast:</strong> Projects future budget trends based on average monthly costs from the last 2 months. Green = positive forecast, orange = negative.</p>
@@ -83,7 +83,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <h3>Project Details</h3>
                 <p>Each project card shows detailed financial information including:</p>
                 <ul>
-                    <li><strong>PO Coverage:</strong> Total Purchase Order coverage for the project</li>
+                    <li><strong>Budget:</strong> Total Purchase Order coverage for the project</li>
                     <li><strong>Total Costs:</strong> Sum of all cost types (Working Time + Purchase + T&amp;L)</li>
                     <li><strong>Closure Date:</strong> Project end date (from Closure events)</li>
                     <li><strong>EAC (Estimated At Completion):</strong> Forecasted remaining budget at closure</li>
@@ -91,8 +91,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     <li><strong>Missing Invoice/Overinvoiced:</strong> Total Invoices minus Total Costs</li>
                     <li><strong>Remaining Budget:</strong> Current budget status (green if positive, red if negative)</li>
                     <li><strong>Working Time / Purchase / T&amp;L Costs:</strong> Breakdown by cost type</li>
-                    <li><strong>Deferment:</strong> Positive adds to PO coverage and counts as invoiced. Negative reduces PO coverage. Not a cost.</li>
-                    <li><strong>Financial Record:</strong> Positive counts as invoiced. Negative reduces PO coverage. Not a cost.</li>
+                    <li><strong>Deferment:</strong> Positive adds to the budget and counts as invoiced. Negative reduces the budget. Not a cost.</li>
+                    <li><strong>Financial Record:</strong> Positive counts as invoiced. Negative reduces the budget. Not a cost.</li>
                     <li><strong>Monthly Cost Forecast Rate:</strong> Average monthly cost used for budget forecasting</li>
                 </ul>
 
@@ -117,7 +117,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <div class="summary-value" id="totalProjects">{len(projects)}</div>
             </div>
             <div class="summary-card">
-                <h3>PO Coverage</h3>
+                <h3>Budget</h3>
                 <div class="summary-value" id="totalPOCoverage">€{total_po_coverage:,.2f}</div>
             </div>
             <div class="summary-card">
@@ -196,7 +196,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             <button type="button" class="chart-filter-btn" id="projectAmountChartSelectNone">None</button>
                         </div>
                         <div class="chart-filter-checkboxes">
-                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="0" checked> PO Coverage</label>
+                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="0" checked> Budget</label>
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="1" checked> Costs</label>
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="2" checked> Invoices</label>
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="3" checked> Deferment</label>
@@ -1058,12 +1058,18 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }}
             }});
             
-            // Aggregate hours by month
-            const monthlyHours = {{}};
+            // Aggregate hours by month and project
+            const monthlyHoursByProject = {{}};
+            const monthlyHoursMonthSet = new Set();
+            const monthlyHoursProjectSet = new Set();
             data.forEach(row => {{
                 if (row.hours && row.date && row.date.length >= 7) {{
                     const month = row.date.substring(0, 7);
-                    monthlyHours[month] = (monthlyHours[month] || 0) + row.hours;
+                    const project = row.project || 'Unknown';
+                    monthlyHoursMonthSet.add(month);
+                    monthlyHoursProjectSet.add(project);
+                    if (!monthlyHoursByProject[project]) monthlyHoursByProject[project] = {{}};
+                    monthlyHoursByProject[project][month] = (monthlyHoursByProject[project][month] || 0) + row.hours;
                 }}
             }});
 
@@ -1118,7 +1124,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     labels: allProjects,
                     datasets: [
                         {{
-                            label: 'PO Coverage (€)',
+                            label: 'Budget (€)',
                             data: allProjects.map(p => projectPOCoverage[p] || 0),
                             backgroundColor: cc1.po + '99',
                             borderColor: cc1.po,
@@ -1261,8 +1267,9 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }});
             }}
 
-            // Hours by Month Chart
-            const hoursMonths = Object.keys(monthlyHours).sort();
+            // Hours by Month Chart (stacked by project)
+            const hoursMonths = Array.from(monthlyHoursMonthSet).sort();
+            const hoursProjects2 = Array.from(monthlyHoursProjectSet).sort();
 
             if (hoursMonths.length === 0) {{
                 $('#monthlyHoursChartPlaceholder').addClass('show');
@@ -1272,26 +1279,38 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
             if (hoursMonths.length > 0) {{
                 const ctx3 = document.getElementById('monthlyHoursChart').getContext('2d');
-                const cc3 = getChartColors();
+                // Generate a distinct color for each project
+                const projectPalette = [
+                    '#4f6bed', '#16a34a', '#dc2626', '#ca8a04', '#7c3aed',
+                    '#ea580c', '#0891b2', '#be185d', '#4338ca', '#15803d',
+                    '#b91c1c', '#a16207', '#6d28d9', '#c2410c', '#0e7490',
+                    '#9d174d', '#3730a3', '#166534', '#991b1b', '#854d0e'
+                ];
+                const monthlyHoursDatasets = hoursProjects2.map((project, i) => {{
+                    const color = projectPalette[i % projectPalette.length];
+                    return {{
+                        label: project,
+                        data: hoursMonths.map(m => (monthlyHoursByProject[project] && monthlyHoursByProject[project][m]) || 0),
+                        backgroundColor: color + 'cc',
+                        borderColor: color,
+                        borderWidth: 1
+                    }};
+                }});
                 window.monthlyHoursChart = new Chart(ctx3, {{
                     type: 'bar',
                     data: {{
                         labels: hoursMonths,
-                        datasets: [{{
-                            label: 'Hours',
-                            data: hoursMonths.map(m => monthlyHours[m]),
-                            backgroundColor: cc3.hours + '99',
-                            borderColor: cc3.hours,
-                            borderWidth: 1
-                        }}]
+                        datasets: monthlyHoursDatasets
                     }},
                     options: {{
                         responsive: true,
                         maintainAspectRatio: true,
                         scales: {{
-                            y: {{
-                                beginAtZero: true
-                            }}
+                            x: {{ stacked: true }},
+                            y: {{ stacked: true, beginAtZero: true }}
+                        }},
+                        plugins: {{
+                            legend: {{ display: true }}
                         }}
                     }}
                 }});
@@ -2369,7 +2388,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         <h3>${{project}}</h3>
                         <div class="project-stats">
                             <div class="project-stat">
-                                <div class="project-stat-label">PO Coverage</div>
+                                <div class="project-stat-label">Budget</div>
                                 <div class="project-stat-value">${{poCoverageFormatted}}</div>
                             </div>
                             <div class="project-stat">
