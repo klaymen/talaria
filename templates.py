@@ -2488,7 +2488,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
                 // Determine project status: Closed, Planned, or Active
                 let projectStatus = 'Active';
-                let projectStatusClass = 'active';
+                let projectStatusClass = statusClass; // green/yellow/red for active projects
                 if (closureDate && closureDate.substring(0, 10) <= generationDate) {{
                     projectStatus = 'Closed';
                     projectStatusClass = 'closed';

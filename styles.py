@@ -794,8 +794,16 @@ def get_css():
         margin-left: 8px;
         letter-spacing: 0.03em;
         }
-        .project-status-badge.active {
+        .project-status-badge.green {
         background: var(--color-positive);
+        color: #fff;
+        }
+        .project-status-badge.yellow {
+        background: var(--color-warning);
+        color: #fff;
+        }
+        .project-status-badge.red {
+        background: var(--color-negative);
         color: #fff;
         }
         .project-status-badge.planned {
