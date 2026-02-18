@@ -130,19 +130,19 @@ def read_excel_data(file_path):
                 if pd.isna(row.get('Project', '')) or str(row.get('Project', '')).strip() == '':
                     continue
 
-                hourly_rate = parse_rate(row.get('Hourly Rate'))
-                additional_rate = parse_rate(row.get('Additional Rate'))
+                billing_rate = parse_rate(row.get('Hourly Rate'))
+                surcharge_rate = parse_rate(row.get('Additional Rate'))
                 hours = parse_hours(row.get('Hours'))
                 amount = parse_amount(row.get('Amount'))
                 event_type = str(row.get('Event Type', '')).strip() if pd.notna(row.get('Event Type')) else ''
 
-                # Calculate cost for Working Time: hours × hourly_rate × (1 + additional_rate)
-                calculated_cost = None
-                if event_type == 'Working Time' and hourly_rate is not None and hours > 0:
+                # Calculate billable amount for Working Time: hours × billing_rate × (1 + surcharge_rate)
+                billable_amount = None
+                if event_type == 'Working Time' and billing_rate is not None and hours > 0:
                     multiplier = 1.0
-                    if additional_rate is not None:
-                        multiplier = 1.0 + additional_rate
-                    calculated_cost = hours * hourly_rate * multiplier
+                    if surcharge_rate is not None:
+                        multiplier = 1.0 + surcharge_rate
+                    billable_amount = hours * billing_rate * multiplier
 
                 # Build comment: combine explicit Comment column + cell comments
                 comment_parts = []
@@ -163,11 +163,11 @@ def read_excel_data(file_path):
                     'date': str(row.get('Date', '')) if pd.notna(row.get('Date')) else '',
                     'event_type': event_type,
                     'project': str(row.get('Project', '')).strip() if pd.notna(row.get('Project')) else '',
-                    'hourly_rate': hourly_rate,
-                    'additional_rate': additional_rate,
+                    'billing_rate': billing_rate,
+                    'surcharge_rate': surcharge_rate,
                     'hours': hours,
                     'amount': amount,
-                    'calculated_cost': calculated_cost,
+                    'billable_amount': billable_amount,
                     'comment': comment,
                     'sheet': sheet_name
                 }
