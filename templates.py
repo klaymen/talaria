@@ -807,10 +807,12 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             let deferment = 0;
             let financialRecord = 0;
             let positiveFinancialRecord = 0;
+            const costsByProject = {{}};
 
             data.forEach(row => {{
                 const eventType = row.event_type || '';
                 const amount = row.amount || 0;
+                const project = row.project || '';
 
                 if (eventType === 'PO') {{
                     poCoverage += amount;
@@ -818,10 +820,13 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     invoices += amount;  // Track for information, but don't count as cost
                 }} else if (eventType === 'Working Time' && row.calculated_cost) {{
                     workingTimeCosts += row.calculated_cost;
+                    if (project) costsByProject[project] = (costsByProject[project] || 0) + row.calculated_cost;
                 }} else if (eventType === 'Purchase') {{
                     purchaseCosts += amount;
+                    if (project) costsByProject[project] = (costsByProject[project] || 0) + amount;
                 }} else if (eventType === 'T&L') {{
                     tlCosts += amount;
+                    if (project) costsByProject[project] = (costsByProject[project] || 0) + amount;
                 }} else if (eventType === 'Deferment') {{
                     deferment += amount;  // Can be positive or negative
                     // Positive deferment: add to PO coverage and count as invoiced
@@ -879,7 +884,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }}
             }});
             const closedCount = projects.filter(p => closedProjectSet.has(p)).length;
-            const plannedCount = projects.filter(p => !closedProjectSet.has(p) && !(projectCosts[p] > 0)).length;
+            const plannedCount = projects.filter(p => !closedProjectSet.has(p) && !(costsByProject[p] > 0)).length;
             const activeCount = projects.length - closedCount - plannedCount;
 
             $('#plannedProjectCount').text(plannedCount);
