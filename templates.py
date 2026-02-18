@@ -34,6 +34,13 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             <button class="toolbar-btn" id="themeToggle" title="Toggle dark mode">&#9790;</button>
             <div class="toolbar-divider"></div>
             <button class="toolbar-btn" id="helpIcon" title="Dashboard guide">?</button>
+            <div class="toolbar-divider"></div>
+            <a class="toolbar-btn" href="#sectionSummary" title="Summary"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></a>
+            <a class="toolbar-btn" href="#sectionFilters" title="Filters"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h12M4 6h8M6 9h4M7 12h2"/></svg></a>
+            <a class="toolbar-btn" href="#sectionCharts" title="Charts"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="3" height="6"/><rect x="6.5" y="4" width="3" height="10"/><rect x="11" y="2" width="3" height="12"/></svg></a>
+            <a class="toolbar-btn" href="#sectionTable" title="Data Table"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="1"/><line x1="2" y1="6" x2="14" y2="6"/><line x1="2" y1="10" x2="14" y2="10"/><line x1="6" y1="2" x2="6" y2="14"/></svg></a>
+            <a class="toolbar-btn" href="#sectionMonthly" title="Monthly Summary"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="1"/><line x1="5" y1="2" x2="5" y2="5"/><line x1="11" y1="2" x2="11" y2="5"/><line x1="2" y1="6" x2="14" y2="6"/><circle cx="5" cy="9" r="0.5" fill="currentColor"/><circle cx="8" cy="9" r="0.5" fill="currentColor"/><circle cx="11" cy="9" r="0.5" fill="currentColor"/><circle cx="5" cy="12" r="0.5" fill="currentColor"/><circle cx="8" cy="12" r="0.5" fill="currentColor"/></svg></a>
+            <a class="toolbar-btn" href="#sectionProjects" title="Project Details"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h3l2-2h5l2 2h0v9a1 1 0 01-1 1H3a1 1 0 01-1-1V4z"/></svg></a>
         </div>
         
         <div class="help-modal" id="helpModal">
@@ -113,7 +120,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         </div>
 
         <!-- Summary Cards -->
-        <div class="summary-section">
+        <div class="summary-section" id="sectionSummary">
             <div class="summary-card">
                 <h3>Cost/Invoiced</h3>
                 <div class="summary-value" id="costInvoicedRatio">-</div>
@@ -161,7 +168,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         </div>
 
         <!-- Filters -->
-        <details class="collapsible-section" open>
+        <details class="collapsible-section" id="sectionFilters" open>
             <summary><h2>Filters</h2></summary>
             <div class="filters-section">
                 <div class="filters">
@@ -203,7 +210,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         </details>
 
         <!-- Charts Section -->
-        <details class="collapsible-section" open>
+        <details class="collapsible-section" id="sectionCharts" open>
             <summary><h2>Charts</h2></summary>
             <div class="charts-section">
                 <div class="chart-container">
@@ -249,7 +256,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         </details>
 
         <!-- Data Table -->
-        <details class="collapsible-section" open>
+        <details class="collapsible-section" id="sectionTable" open>
             <summary><h2>Data Table <span id="tableRecordCount" style="font-size: 0.7em; color: var(--color-text-muted); font-weight: normal;"></span></h2></summary>
             <div class="table-section">
                 <div class="table-controls">
@@ -298,7 +305,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         </details>
 
         <!-- Monthly Working Time Summary -->
-        <details class="collapsible-section" open>
+        <details class="collapsible-section" id="sectionMonthly" open>
             <summary><h2>Monthly Working Time Summary</h2></summary>
             <div class="table-section">
                 <div class="table-wrapper">
@@ -319,7 +326,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         </details>
 
         <!-- Project Details -->
-        <details class="collapsible-section" open>
+        <details class="collapsible-section" id="sectionProjects" open>
             <summary><h2>Project Details</h2></summary>
             <div class="project-details-section">
                 <div id="projectDetails"></div>
@@ -871,7 +878,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             const activeCount = projects.length - closedCount;
             $('#totalProjects').text(activeCount);
             if (closedCount > 0) {{
-                $('#closedProjects').text(' +' + closedCount).attr('title', closedCount + ' closed');
+                $('#closedProjects').text(' +' + closedCount + ' Closed').attr('title', closedCount + ' closed project' + (closedCount > 1 ? 's' : ''));
             }} else {{
                 $('#closedProjects').text('');
             }}
