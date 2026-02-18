@@ -2486,10 +2486,21 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
                 const statusIndicator = `<div class="project-status-indicator ${{statusClass}}" data-tooltip="${{tooltipText}}"></div>`;
 
+                // Determine project status: Closed, Planned, or Active
+                let projectStatus = 'Active';
+                let projectStatusClass = 'active';
+                if (closureDate && closureDate.substring(0, 10) <= generationDate) {{
+                    projectStatus = 'Closed';
+                    projectStatusClass = 'closed';
+                }} else if (totalCosts === 0) {{
+                    projectStatus = 'Planned';
+                    projectStatusClass = 'planned';
+                }}
+
                 const card = $(`
                     <div class="project-card status-${{statusClass}}">
                         ${{statusIndicator}}
-                        <h3>${{project}}</h3>
+                        <h3>${{project}} <span class="project-status-badge ${{projectStatusClass}}">${{projectStatus}}</span></h3>
                         <div class="project-stats">
                             <div class="project-stat cost-highlight">
                                 <div class="project-stat-label">Budget</div>
