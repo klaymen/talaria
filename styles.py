@@ -103,6 +103,10 @@ def get_css():
         box-sizing: border-box;
         }
 
+        html {
+        scroll-behavior: smooth;
+        }
+
         body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         background: var(--color-bg);
@@ -182,6 +186,10 @@ def get_css():
 
         .toolbar-btn:hover {
         background: rgba(255,255,255,0.2);
+        }
+
+        a.toolbar-btn {
+        text-decoration: none;
         }
 
         .toolbar-divider {
