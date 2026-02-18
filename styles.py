@@ -357,6 +357,13 @@ def get_css():
         color: var(--color-primary);
         }
 
+        .closed-count {
+        font-size: 0.55em;
+        font-weight: normal;
+        color: var(--color-text-muted);
+        opacity: 0.6;
+        }
+
         .project-status-counts {
         display: flex;
         justify-content: center;
