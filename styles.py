@@ -785,6 +785,28 @@ def get_css():
         margin-bottom: 15px;
         }
 
+        .project-status-badge {
+        font-size: 0.55em;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 10px;
+        vertical-align: middle;
+        margin-left: 8px;
+        letter-spacing: 0.03em;
+        }
+        .project-status-badge.active {
+        background: var(--color-positive);
+        color: #fff;
+        }
+        .project-status-badge.planned {
+        background: var(--color-primary);
+        color: #fff;
+        }
+        .project-status-badge.closed {
+        background: var(--color-text-muted);
+        color: #fff;
+        }
+
         .project-stats {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
