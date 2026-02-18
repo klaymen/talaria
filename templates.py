@@ -68,7 +68,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <p><strong>Coverage:</strong> Shown next to each project name. Calculated as <em>Total Costs / (Invoiced + Positive Financial Record)</em>. This ratio indicates how much of the invoiced-or-planned amount has actually been spent. Positive Financial Records represent amounts that are expected to be invoiced in the future, so they widen the denominator without affecting costs or the invoice totals.</p>
 
                 <h3>Charts</h3>
-                <p><strong>Amount by Project:</strong> Shows Budget, Costs, Invoices, Deferment, Financial Record, and Remaining Budget grouped by project.</p>
+                <p><strong>Budget by Project:</strong> Shows Budget, Costs, Invoices, Deferment, Financial Record, and Remaining Budget grouped by project.</p>
                 <p><strong>Timeline:</strong> Monthly costs and cumulative remaining budget over time.</p>
                 <p><strong>Monthly Working Time Summary:</strong> Aggregated hours and costs by month.</p>
                 <p><strong>Budget Forecast:</strong> Projects future budget trends based on average monthly costs from the last 2 months. Green = positive forecast, orange = negative.</p>
@@ -207,7 +207,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             <summary><h2>Charts</h2></summary>
             <div class="charts-section">
                 <div class="chart-container">
-                    <h3>Amount by Project</h3>
+                    <h3>Budget by Project</h3>
                     <div class="chart-filters" id="projectAmountChartFilters" style="display: none;">
                         <div class="chart-filter-buttons">
                             <button type="button" class="chart-filter-btn" id="projectAmountChartSelectAll">All</button>

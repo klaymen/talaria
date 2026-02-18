@@ -18,7 +18,7 @@ A Python tool that reads Excel files containing project tracking data and genera
   - Remaining budget calculation per project
 - **Comments**: Supports both a dedicated Comment column and cell-level Excel comments (sticky notes), displayed as tooltips on hover in the data table
 - **Visualizations**: Multiple charts including:
-  - Amount by Project (Budget, Costs, Invoices, Deferment, Remaining Budget)
+  - Budget by Project (Budget, Costs, Invoices, Deferment, Remaining Budget)
   - Hours by Project (bar chart)
   - Timeline (monthly costs and remaining budget)
   - Budget Forecast (with actual and forecasted data)
@@ -143,7 +143,7 @@ In addition to the Comment column, the dashboard also reads **cell-level Excel c
 - Clear all filters
 
 ### Charts
-- **Amount by Project**: Bar chart showing Budget, Costs, Invoices, Deferment, Financial Record, and Remaining Budget per project
+- **Budget by Project**: Bar chart showing Budget, Costs, Invoices, Deferment, Financial Record, and Remaining Budget per project
 - **Hours by Project**: Bar chart showing total hours per project
 - **Timeline**: Line chart showing monthly costs and cumulative remaining budget over time
 - **Budget Forecast**: Line chart showing actual and forecasted remaining budget, with color-coded forecast (green for positive, orange for negative)
