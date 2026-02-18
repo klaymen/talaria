@@ -390,6 +390,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         const allData = {data_json};
         const projectFinancials = {financials_json};
         const monthlyWorkingTime = {monthly_summary_json};
+        const generationDate = '{datetime.now().strftime('%Y-%m-%d')}';
         let filteredData = [...allData];
 
         // Initialize dashboard
@@ -859,10 +860,10 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
             $('#costInvoicedRatio').text(invoicedCostRatio);
             $('#coverageRatio').text(coverageRatioText);
-            // Count closed projects (those with a Closure event)
+            // Count closed projects (Closure event with date <= generation date)
             const closedProjectSet = new Set();
             data.forEach(row => {{
-                if (row.event_type === 'Closure' && row.project) {{
+                if (row.event_type === 'Closure' && row.project && row.date && row.date <= generationDate) {{
                     closedProjectSet.add(row.project);
                 }}
             }});
