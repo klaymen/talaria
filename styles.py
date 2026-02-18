@@ -365,12 +365,32 @@ def get_css():
         color: var(--color-primary);
         }
 
-        .closed-count {
-        font-size: 0.55em;
-        font-weight: normal;
-        color: var(--color-text-muted);
-        opacity: 0.6;
+        .project-category-counts {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
         }
+
+        .category-count-item {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 3px;
+        }
+
+        .category-count-num {
+        font-size: 1.5em;
+        font-weight: bold;
+        }
+
+        .category-count-label {
+        font-size: 0.75em;
+        font-weight: 600;
+        opacity: 0.85;
+        }
+
+        .category-count-item.planned { color: var(--color-primary); }
+        .category-count-item.active { color: var(--color-positive); }
+        .category-count-item.closed { color: var(--color-text-muted); }
 
         .project-status-counts {
         display: flex;

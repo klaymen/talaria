@@ -131,7 +131,11 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             </div>
             <div class="summary-card">
                 <h3>Total Projects</h3>
-                <div class="summary-value"><span id="totalProjects">{len(projects)}</span><span id="closedProjects" class="closed-count"></span></div>
+                <div class="project-category-counts">
+                    <span class="category-count-item planned" id="plannedProjectItem"><span class="category-count-num" id="plannedProjectCount">0</span> <span class="category-count-label">Planned</span></span>
+                    <span class="category-count-item active" id="activeProjectItem"><span class="category-count-num" id="activeProjectCount">0</span> <span class="category-count-label">Active</span></span>
+                    <span class="category-count-item closed" id="closedProjectItem"><span class="category-count-num" id="closedProjectCount">0</span> <span class="category-count-label">Closed</span></span>
+                </div>
             </div>
             <div class="summary-card">
                 <h3>Project Status</h3>
@@ -867,7 +871,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
             $('#costInvoicedRatio').text(invoicedCostRatio);
             $('#coverageRatio').text(coverageRatioText);
-            // Count closed projects (Closure event with date <= generation date)
+            // Categorise projects: Closed, Planned (no costs), Active
             const closedProjectSet = new Set();
             data.forEach(row => {{
                 if (row.event_type === 'Closure' && row.project && row.date && row.date <= generationDate) {{
@@ -875,13 +879,16 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }}
             }});
             const closedCount = projects.filter(p => closedProjectSet.has(p)).length;
-            const activeCount = projects.length - closedCount;
-            $('#totalProjects').text(activeCount);
-            if (closedCount > 0) {{
-                $('#closedProjects').text(' +' + closedCount + ' Closed').attr('title', closedCount + ' closed project' + (closedCount > 1 ? 's' : ''));
-            }} else {{
-                $('#closedProjects').text('');
-            }}
+            const plannedCount = projects.filter(p => !closedProjectSet.has(p) && !(projectCosts[p] > 0)).length;
+            const activeCount = projects.length - closedCount - plannedCount;
+
+            $('#plannedProjectCount').text(plannedCount);
+            $('#activeProjectCount').text(activeCount);
+            $('#closedProjectCount').text(closedCount);
+            // Hide categories with zero count
+            $('#plannedProjectItem').toggle(plannedCount > 0);
+            $('#activeProjectItem').toggle(activeCount > 0);
+            $('#closedProjectItem').toggle(closedCount > 0);
             $('#totalPOCoverage').text(formatEUR(poCoverage));
             $('#totalCosts').text(formatEUR(totalCosts));
             $('#totalInvoices').text(formatEUR(invoices));
