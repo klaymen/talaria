@@ -374,6 +374,9 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             applyChartDefaults();
         }}
         initTheme();
+        // Always scroll to top on page load/refresh
+        if ('scrollRestoration' in history) {{ history.scrollRestoration = 'manual'; }}
+        window.scrollTo(0, 0);
         // Set correct icon (sun in dark mode, moon in light mode) on load
         document.addEventListener('DOMContentLoaded', function() {{ updateThemeIcon(); }});
 
