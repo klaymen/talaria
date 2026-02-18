@@ -479,11 +479,13 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 if (currentPage > 1) {{
                     currentPage--;
                     renderTablePage();
+                    document.getElementById('dataTable').scrollIntoView({{behavior: 'auto', block: 'start'}});
                 }}
             }});
             $('#nextPage').on('click', function() {{
                 currentPage++;
                 renderTablePage();
+                document.getElementById('dataTable').scrollIntoView({{behavior: 'auto', block: 'start'}});
             }});
             $('#tablePageSize').on('change', function() {{
                 currentPage = 1;
