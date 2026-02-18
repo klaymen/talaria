@@ -124,7 +124,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             </div>
             <div class="summary-card">
                 <h3>Total Projects</h3>
-                <div class="summary-value" id="totalProjects">{len(projects)}</div>
+                <div class="summary-value"><span id="totalProjects">{len(projects)}</span><span id="closedProjects" class="closed-count"></span></div>
             </div>
             <div class="summary-card">
                 <h3>Project Status</h3>
@@ -859,7 +859,21 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
             $('#costInvoicedRatio').text(invoicedCostRatio);
             $('#coverageRatio').text(coverageRatioText);
-            $('#totalProjects').text(projects.length);
+            // Count closed projects (those with a Closure event)
+            const closedProjectSet = new Set();
+            data.forEach(row => {{
+                if (row.event_type === 'Closure' && row.project) {{
+                    closedProjectSet.add(row.project);
+                }}
+            }});
+            const closedCount = projects.filter(p => closedProjectSet.has(p)).length;
+            const activeCount = projects.length - closedCount;
+            $('#totalProjects').text(activeCount);
+            if (closedCount > 0) {{
+                $('#closedProjects').text(' +' + closedCount).attr('title', closedCount + ' closed');
+            }} else {{
+                $('#closedProjects').text('');
+            }}
             $('#totalPOCoverage').text(formatEUR(poCoverage));
             $('#totalCosts').text(formatEUR(totalCosts));
             $('#totalInvoices').text(formatEUR(invoices));
