@@ -477,15 +477,21 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             // Pagination controls
             $('#prevPage').on('click', function() {{
                 if (currentPage > 1) {{
+                    const prevCount = lastPageRowCount;
                     currentPage--;
                     renderTablePage();
-                    document.getElementById('dataTable').scrollIntoView({{behavior: 'auto', block: 'start'}});
+                    if (lastPageRowCount !== prevCount) {{
+                        document.getElementById('dataTable').scrollIntoView({{behavior: 'auto', block: 'start'}});
+                    }}
                 }}
             }});
             $('#nextPage').on('click', function() {{
+                const prevCount = lastPageRowCount;
                 currentPage++;
                 renderTablePage();
-                document.getElementById('dataTable').scrollIntoView({{behavior: 'auto', block: 'start'}});
+                if (lastPageRowCount !== prevCount) {{
+                    document.getElementById('dataTable').scrollIntoView({{behavior: 'auto', block: 'start'}});
+                }}
             }});
             $('#tablePageSize').on('change', function() {{
                 currentPage = 1;
@@ -900,6 +906,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             return val === 'all' ? Infinity : parseInt(val);
         }}
 
+        let lastPageRowCount = -1;
         function renderTablePage() {{
             const tbody = $('#tableBody');
             tbody.empty();
@@ -954,6 +961,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             }} else {{
                 $('#tablePagination').show();
             }}
+            lastPageRowCount = pageData.length;
         }}
 
         function sortTableData(data) {{
