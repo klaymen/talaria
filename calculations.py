@@ -26,10 +26,10 @@ def calculate_project_financials(records):
         if project not in project_financials:
             project_financials[project] = {
                 'po_coverage': 0.0,  # Total PO amounts (budget)
-                'invoices': 0.0,     # Total invoice amounts (informational only, not a cost)
-                'working_time_costs': 0.0,  # Calculated costs from Working Time
-                'purchase_costs': 0.0,  # Purchase amounts
-                'tl_costs': 0.0,      # T&L amounts
+                'invoices': 0.0,     # Total invoice amounts (informational only)
+                'working_time_fees': 0.0,  # Billable fees from Working Time
+                'purchase_expenses': 0.0,  # Purchase amounts
+                'tl_expenses': 0.0,      # T&L amounts
                 'deferment': 0.0,     # Deferment amounts (can be positive or negative)
                 'financial_record': 0.0,  # Financial Record amounts
                 'total_hours': 0.0,
@@ -44,13 +44,13 @@ def calculate_project_financials(records):
         elif event_type == 'Invoice':
             project_financials[project]['invoices'] += amount
         elif event_type == 'Working Time':
-            if record.get('calculated_cost'):
-                project_financials[project]['working_time_costs'] += record['calculated_cost']
+            if record.get('billable_amount'):
+                project_financials[project]['working_time_fees'] += record['billable_amount']
             project_financials[project]['total_hours'] += record['hours'] or 0.0
         elif event_type == 'Purchase':
-            project_financials[project]['purchase_costs'] += amount
+            project_financials[project]['purchase_expenses'] += amount
         elif event_type == 'T&L':
-            project_financials[project]['tl_costs'] += amount
+            project_financials[project]['tl_expenses'] += amount
         elif event_type == 'Deferment':
             project_financials[project]['deferment'] += amount
         elif event_type == 'Financial Record':
@@ -71,24 +71,24 @@ def calculate_totals(project_financials, records):
     """Calculate total financials."""
     total_po_coverage = sum(pf['po_coverage'] for pf in project_financials.values())
     total_invoices = sum(pf['invoices'] for pf in project_financials.values())  # Informational only
-    total_working_time_costs = sum(pf['working_time_costs'] for pf in project_financials.values())
-    total_purchase_costs = sum(pf['purchase_costs'] for pf in project_financials.values())
-    total_tl_costs = sum(pf['tl_costs'] for pf in project_financials.values())
+    total_working_time_fees = sum(pf['working_time_fees'] for pf in project_financials.values())
+    total_purchase_expenses = sum(pf['purchase_expenses'] for pf in project_financials.values())
+    total_tl_expenses = sum(pf['tl_expenses'] for pf in project_financials.values())
     total_deferment = sum(pf['deferment'] for pf in project_financials.values())
     total_financial_record = sum(pf['financial_record'] for pf in project_financials.values())
-    # Total costs = Working Time + Purchase + T&L + Deferment (Deferment can be positive or negative)
-    total_costs = total_working_time_costs + total_purchase_costs + total_tl_costs + total_deferment
+    # Total charges = Working Time fees + Purchase expenses + T&L expenses + Deferment (Deferment can be positive or negative)
+    total_charges = total_working_time_fees + total_purchase_expenses + total_tl_expenses + total_deferment
     total_hours = sum(r['hours'] for r in records)
 
     return {
         'total_po_coverage': total_po_coverage,
         'total_invoices': total_invoices,
-        'total_working_time_costs': total_working_time_costs,
-        'total_purchase_costs': total_purchase_costs,
-        'total_tl_costs': total_tl_costs,
+        'total_working_time_fees': total_working_time_fees,
+        'total_purchase_expenses': total_purchase_expenses,
+        'total_tl_expenses': total_tl_expenses,
         'total_deferment': total_deferment,
         'total_financial_record': total_financial_record,
-        'total_costs': total_costs,
+        'total_charges': total_charges,
         'total_hours': total_hours
     }
 
@@ -110,16 +110,16 @@ def calculate_monthly_working_time(records):
     monthly_working_time = {}
     
     for record in records:
-        if record['event_type'] == 'Working Time' and record.get('calculated_cost') and record.get('year_month'):
+        if record['event_type'] == 'Working Time' and record.get('billable_amount') and record.get('year_month'):
             month = record['year_month']
             if month not in monthly_working_time:
                 monthly_working_time[month] = {
                     'hours': 0.0,
-                    'cost': 0.0,
+                    'fees': 0.0,
                     'projects': set()
                 }
             monthly_working_time[month]['hours'] += record['hours'] or 0.0
-            monthly_working_time[month]['cost'] += record['calculated_cost']
+            monthly_working_time[month]['fees'] += record['billable_amount']
             if record['project']:
                 monthly_working_time[month]['projects'].add(record['project'])
     

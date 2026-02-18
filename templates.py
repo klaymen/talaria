@@ -7,7 +7,7 @@ from datetime import datetime
 from styles import get_css
 
 
-def get_html_template(projects, event_types, total_po_coverage, total_costs, 
+def get_html_template(projects, event_types, total_po_coverage, total_charges,
                      total_invoices, total_hours, date_from, date_to,
                      data_json, financials_json, monthly_summary_json):
     """Generate HTML template with embedded data."""
@@ -54,31 +54,31 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <h3>Event Types</h3>
                 <ul>
                     <li><strong>PO (Purchase Order):</strong> Adds to the project budget.</li>
-                    <li><strong>Working Time:</strong> A cost. Calculated as hours &times; hourly rate &times; (1 + additional rate). The calculated cost is shown instead of the Amount field.</li>
-                    <li><strong>Purchase:</strong> A direct cost (e.g. software licenses, hardware).</li>
-                    <li><strong>T&amp;L:</strong> Travel &amp; Logistics costs.</li>
-                    <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a cost, not added to the budget. Used for the Missing Coverage / Overcovered calculation.</li>
-                    <li><strong>Deferment:</strong> Positive deferment adds to the budget and counts as invoiced. Negative deferment reduces the budget. Not included in costs.</li>
-                    <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage calculation (Cost&nbsp;/&nbsp;(Invoiced&nbsp;+&nbsp;Positive&nbsp;Financial&nbsp;Record)) but are <em>not</em> counted as invoiced. Negative amounts reduce the budget. Not included in costs.</li>
+                    <li><strong>Working Time:</strong> A fee. Calculated as hours &times; billing rate &times; (1 + surcharge rate). The billable amount is shown instead of the Amount field.</li>
+                    <li><strong>Purchase:</strong> A direct expense (e.g. software licenses, hardware).</li>
+                    <li><strong>T&amp;L:</strong> Travel &amp; Logistics expenses.</li>
+                    <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a charge, not added to the budget. Used for the Missing Coverage / Overcovered calculation.</li>
+                    <li><strong>Deferment:</strong> Positive deferment adds to the budget and counts as invoiced. Negative deferment reduces the budget. Not included in charges.</li>
+                    <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage calculation (Charges&nbsp;/&nbsp;(Invoiced&nbsp;+&nbsp;Positive&nbsp;Financial&nbsp;Record)) but are <em>not</em> counted as invoiced. Negative amounts reduce the budget. Not included in charges.</li>
                     <li><strong>Closure:</strong> Marks the project end date. The budget forecast extends to the closure month.</li>
                 </ul>
 
                 <h3>Summary Cards</h3>
-                <p><strong>Cost/Invoiced:</strong> Ratio of total invoices to total costs, expressed as a percentage.</p>
+                <p><strong>Charges/Invoiced:</strong> Ratio of total invoices to total charges, expressed as a percentage.</p>
                 <p><strong>Total Projects:</strong> Number of unique projects in the dataset.</p>
                 <p><strong>Project Status:</strong> Number of projects in each forecast status &mdash; green (positive), yellow (slightly negative), red (significantly negative).</p>
                 <p><strong>Budget:</strong> Total Purchase Order coverage across all projects (includes positive Deferment and is reduced by negative Deferment and negative Financial Records).</p>
-                <p><strong>Total Costs:</strong> Sum of Working Time + Purchases + T&amp;L. Deferment and Financial Record are not costs.</p>
+                <p><strong>Total Charges:</strong> Sum of Working Time fees + Purchase expenses + T&amp;L expenses. Deferment and Financial Record are not charges.</p>
                 <p><strong>Total Invoices:</strong> Total invoiced amounts (includes Invoice events and positive Deferment). Positive Financial Records are <em>not</em> counted as invoiced.</p>
-                <p><strong>Missing Coverage/Overcovered:</strong> (Invoiced + Positive Financial Record) minus Total Costs. Negative (red) = missing coverage; positive = overcovered.</p>
-                <p><strong>Remaining Budget:</strong> Budget minus Total Costs.</p>
-                <p><strong>Coverage:</strong> Shown next to each project name. Calculated as <em>Total Costs / (Invoiced + Positive Financial Record)</em>. This ratio indicates how much of the invoiced-or-planned amount has actually been spent. Positive Financial Records represent amounts that are expected to be invoiced in the future, so they widen the denominator without affecting costs or the invoice totals.</p>
+                <p><strong>Missing Coverage/Overcovered:</strong> (Invoiced + Positive Financial Record) minus Total Charges. Negative (red) = missing coverage; positive = overcovered.</p>
+                <p><strong>Remaining Budget:</strong> Budget minus Total Charges.</p>
+                <p><strong>Coverage:</strong> Shown next to each project name. Calculated as <em>Total Charges / (Invoiced + Positive Financial Record)</em>. This ratio indicates how much of the invoiced-or-planned amount has actually been charged. Positive Financial Records represent amounts that are expected to be invoiced in the future, so they widen the denominator without affecting charges or the invoice totals.</p>
 
                 <h3>Charts</h3>
-                <p><strong>Budget by Project:</strong> Shows Budget, Costs, Invoices, Deferment, Financial Record, and Remaining Budget grouped by project.</p>
-                <p><strong>Timeline:</strong> Monthly costs and cumulative remaining budget over time.</p>
-                <p><strong>Monthly Working Time Summary:</strong> Aggregated hours and costs by month.</p>
-                <p><strong>Budget Forecast:</strong> Projects future budget trends based on average monthly costs from the last 2 months. Green = positive forecast, orange = negative.</p>
+                <p><strong>Budget by Project:</strong> Shows Budget, Charges, Invoices, Deferment, Financial Record, and Remaining Budget grouped by project.</p>
+                <p><strong>Timeline:</strong> Monthly charges and cumulative remaining budget over time.</p>
+                <p><strong>Monthly Working Time Summary:</strong> Aggregated hours and fees by month.</p>
+                <p><strong>Budget Forecast:</strong> Projects future budget trends based on average monthly charges from the last 2 months. Green = positive forecast, orange = negative.</p>
 
                 <h3>Data Table</h3>
                 <p>The data table shows all records with the following features:</p>
@@ -96,17 +96,17 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <p>Each project card shows detailed financial information including:</p>
                 <ul>
                     <li><strong>Budget:</strong> Total Purchase Order coverage for the project</li>
-                    <li><strong>Total Costs:</strong> Sum of all cost types (Working Time + Purchase + T&amp;L)</li>
+                    <li><strong>Total Charges:</strong> Sum of all charge types (Working Time fees + Purchase expenses + T&amp;L expenses)</li>
                     <li><strong>Closure Date:</strong> Project end date (from Closure events)</li>
                     <li><strong>EAC (Estimated At Completion):</strong> Forecasted remaining budget at closure</li>
                     <li><strong>Invoices:</strong> Total invoiced amounts</li>
-                    <li><strong>Missing Coverage/Overcovered:</strong> (Invoiced + Positive Financial Record) minus Total Costs</li>
+                    <li><strong>Missing Coverage/Overcovered:</strong> (Invoiced + Positive Financial Record) minus Total Charges</li>
                     <li><strong>Remaining Budget:</strong> Current budget status (green if positive, red if negative)</li>
-                    <li><strong>Working Time / Purchase / T&amp;L Costs:</strong> Breakdown by cost type</li>
-                    <li><strong>Deferment:</strong> Positive adds to the budget and counts as invoiced. Negative reduces the budget. Not a cost.</li>
-                    <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage ratio. Negative reduces the budget. Not a cost.</li>
-                    <li><strong>Coverage:</strong> Shown next to the project name. Calculated as Cost / (Invoiced + Positive Financial Record).</li>
-                    <li><strong>Burndown Rate:</strong> Average monthly cost used for budget forecasting</li>
+                    <li><strong>Working Time Fees / Purchase Expenses / T&amp;L Expenses:</strong> Breakdown by charge type</li>
+                    <li><strong>Deferment:</strong> Positive adds to the budget and counts as invoiced. Negative reduces the budget. Not a charge.</li>
+                    <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage ratio. Negative reduces the budget. Not a charge.</li>
+                    <li><strong>Coverage:</strong> Shown next to the project name. Calculated as Charges / (Invoiced + Positive Financial Record).</li>
+                    <li><strong>Burndown Rate:</strong> Average monthly charge used for budget forecasting</li>
                 </ul>
 
                 <h3>Status Indicators</h3>
@@ -122,8 +122,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         <!-- Summary Cards -->
         <div class="summary-section" id="sectionSummary">
             <div class="summary-card">
-                <h3>Cost/Invoiced</h3>
-                <div class="summary-value" id="costInvoicedRatio">-</div>
+                <h3>Charges/Invoiced</h3>
+                <div class="summary-value" id="chargesInvoicedRatio">-</div>
             </div>
             <div class="summary-card">
                 <h3>Coverage</h3>
@@ -150,8 +150,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 <div class="summary-value" id="totalPOCoverage">€{total_po_coverage:,.2f}</div>
             </div>
             <div class="summary-card">
-                <h3>Total Costs</h3>
-                <div class="summary-value" id="totalCosts">€{total_costs:,.2f}</div>
+                <h3>Total Charges</h3>
+                <div class="summary-value" id="totalCharges">€{total_charges:,.2f}</div>
             </div>
             <div class="summary-card">
                 <h3>Total Invoices</h3>
@@ -159,11 +159,11 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             </div>
             <div class="summary-card">
                 <h3 id="missingInvoiceLabel">Missing Coverage/Overcovered</h3>
-                <div class="summary-value" id="missingInvoice">€{total_invoices - total_costs:,.2f}</div>
+                <div class="summary-value" id="missingInvoice">€{total_invoices - total_charges:,.2f}</div>
             </div>
             <div class="summary-card">
                 <h3>Remaining Budget</h3>
-                <div class="summary-value" id="remainingBudget">€{total_po_coverage - total_costs:,.2f}</div>
+                <div class="summary-value" id="remainingBudget">€{total_po_coverage - total_charges:,.2f}</div>
             </div>
             <div class="summary-card">
                 <h3>Total Hours</h3>
@@ -226,7 +226,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         </div>
                         <div class="chart-filter-checkboxes">
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="0" checked> Budget</label>
-                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="1" checked> Costs</label>
+                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="1" checked> Charges</label>
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="2" checked> Invoices</label>
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="3" checked> Deferment</label>
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="4" checked> Financial Record</label>
@@ -289,10 +289,10 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                                 <th class="sortable" data-sort="event_type">Event Type</th>
                                 <th class="sortable" data-sort="project">Project</th>
                                 <th class="sortable" data-sort="sheet">Sheet</th>
-                                <th class="sortable" data-sort="hourly_rate">Hourly Rate</th>
-                                <th class="sortable" data-sort="additional_rate">Additional Rate</th>
+                                <th class="sortable" data-sort="billing_rate">Billing Rate</th>
+                                <th class="sortable" data-sort="surcharge_rate">Surcharge Rate</th>
                                 <th class="sortable" data-sort="hours">Hours</th>
-                                <th class="sortable" data-sort="amount">Amount/Cost</th>
+                                <th class="sortable" data-sort="amount">Amount</th>
                                 <th class="sortable" data-sort="comment">Comment</th>
                             </tr>
                         </thead>
@@ -318,7 +318,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             <tr>
                                 <th>Month</th>
                                 <th>Total Hours</th>
-                                <th>Total Cost</th>
+                                <th>Total Fees</th>
                                 <th>Projects</th>
                             </tr>
                         </thead>
@@ -803,14 +803,14 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             
             // Calculate financials from filtered data
             let poCoverage = 0;
-            let invoices = 0;  // Informational only, not a cost
-            let workingTimeCosts = 0;
-            let purchaseCosts = 0;
-            let tlCosts = 0;
+            let invoices = 0;  // Informational only
+            let workingTimeFees = 0;
+            let purchaseExpenses = 0;
+            let tlExpenses = 0;
             let deferment = 0;
             let financialRecord = 0;
             let positiveFinancialRecord = 0;
-            const costsByProject = {{}};
+            const chargesByProject = {{}};
 
             data.forEach(row => {{
                 const eventType = row.event_type || '';
@@ -820,16 +820,16 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 if (eventType === 'PO') {{
                     poCoverage += amount;
                 }} else if (eventType === 'Invoice') {{
-                    invoices += amount;  // Track for information, but don't count as cost
-                }} else if (eventType === 'Working Time' && row.calculated_cost) {{
-                    workingTimeCosts += row.calculated_cost;
-                    if (project) costsByProject[project] = (costsByProject[project] || 0) + row.calculated_cost;
+                    invoices += amount;  // Track for information
+                }} else if (eventType === 'Working Time' && row.billable_amount) {{
+                    workingTimeFees += row.billable_amount;
+                    if (project) chargesByProject[project] = (chargesByProject[project] || 0) + row.billable_amount;
                 }} else if (eventType === 'Purchase') {{
-                    purchaseCosts += amount;
-                    if (project) costsByProject[project] = (costsByProject[project] || 0) + amount;
+                    purchaseExpenses += amount;
+                    if (project) chargesByProject[project] = (chargesByProject[project] || 0) + amount;
                 }} else if (eventType === 'T&L') {{
-                    tlCosts += amount;
-                    if (project) costsByProject[project] = (costsByProject[project] || 0) + amount;
+                    tlExpenses += amount;
+                    if (project) chargesByProject[project] = (chargesByProject[project] || 0) + amount;
                 }} else if (eventType === 'Deferment') {{
                     deferment += amount;  // Can be positive or negative
                     // Positive deferment: add to PO coverage and count as invoiced
@@ -851,33 +851,33 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }}
             }});
 
-            // Total costs = Working Time + Purchase + T&L (Deferment is NOT a cost)
-            const totalCosts = workingTimeCosts + purchaseCosts + tlCosts;
-            // Remaining budget = PO Coverage - Total Costs (invoices are informational only)
-            const remainingBudget = poCoverage - totalCosts;
-            // Coverage gap = (Invoiced + Positive Financial Record) - Total Costs
+            // Total charges = Working Time fees + Purchase expenses + T&L expenses (Deferment is NOT a charge)
+            const totalCharges = workingTimeFees + purchaseExpenses + tlExpenses;
+            // Remaining budget = PO Coverage - Total Charges (invoices are informational only)
+            const remainingBudget = poCoverage - totalCharges;
+            // Coverage gap = (Invoiced + Positive Financial Record) - Total Charges
             // Negative = missing coverage, Positive = overcovered
-            const coverageGap = (invoices + positiveFinancialRecord) - totalCosts;
-            
-            // Calculate Invoiced/Cost ratio as percentage
-            let invoicedCostRatio = '-';
-            if (totalCosts > 0) {{
-                const ratio = (invoices / totalCosts) * 100;
-                invoicedCostRatio = ratio.toFixed(1) + '%';
+            const coverageGap = (invoices + positiveFinancialRecord) - totalCharges;
+
+            // Calculate Invoiced/Charges ratio as percentage
+            let chargesInvoicedRatio = '-';
+            if (totalCharges > 0) {{
+                const ratio = (invoices / totalCharges) * 100;
+                chargesInvoicedRatio = ratio.toFixed(1) + '%';
             }} else if (invoices > 0) {{
-                invoicedCostRatio = '∞';
+                chargesInvoicedRatio = '∞';
             }}
-            
-            // Calculate Coverage = Cost / (Invoiced + Positive Financial Record)
+
+            // Calculate Coverage = Charges / (Invoiced + Positive Financial Record)
             let coverageRatioText = '-';
             const globalCoverageDenom = invoices + positiveFinancialRecord;
-            if (globalCoverageDenom > 0 && totalCosts > 0) {{
-                coverageRatioText = (totalCosts / globalCoverageDenom * 100).toFixed(1) + '%';
-            }} else if (totalCosts === 0 && globalCoverageDenom >= 0) {{
+            if (globalCoverageDenom > 0 && totalCharges > 0) {{
+                coverageRatioText = (totalCharges / globalCoverageDenom * 100).toFixed(1) + '%';
+            }} else if (totalCharges === 0 && globalCoverageDenom >= 0) {{
                 coverageRatioText = '0%';
             }}
 
-            $('#costInvoicedRatio').text(invoicedCostRatio);
+            $('#chargesInvoicedRatio').text(chargesInvoicedRatio);
             $('#coverageRatio').text(coverageRatioText);
             // Categorise projects: Closed, Planned (no costs), Active
             const closedProjectSet = new Set();
@@ -887,7 +887,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }}
             }});
             const closedCount = projects.filter(p => closedProjectSet.has(p)).length;
-            const plannedCount = projects.filter(p => !closedProjectSet.has(p) && !(costsByProject[p] > 0)).length;
+            const plannedCount = projects.filter(p => !closedProjectSet.has(p) && !(chargesByProject[p] > 0)).length;
             const activeCount = projects.length - closedCount - plannedCount;
 
             $('#plannedProjectCount').text(plannedCount);
@@ -898,7 +898,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             $('#activeProjectItem').toggle(activeCount > 0);
             $('#closedProjectItem').toggle(closedCount > 0);
             $('#totalPOCoverage').text(formatEUR(poCoverage));
-            $('#totalCosts').text(formatEUR(totalCosts));
+            $('#totalCharges').text(formatEUR(totalCharges));
             $('#totalInvoices').text(formatEUR(invoices));
             // Update Missing Coverage/Overcovered display
             const coverageGapElement = $('#missingInvoice');
@@ -957,16 +957,16 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 tr.append($('<td>').text(row.event_type || ''));
                 tr.append($('<td>').text(row.project || ''));
                 tr.append($('<td>').text(row.sheet || ''));
-                tr.append($('<td>').text(formatEUR(row.hourly_rate)));
-                let additionalRateDisplay = '';
-                if (row.additional_rate !== null && row.additional_rate !== undefined) {{
-                    const percentage = row.additional_rate * 100;
-                    additionalRateDisplay = percentage >= 100 ? Math.round(percentage) + '%' : percentage.toFixed(2) + '%';
+                tr.append($('<td>').text(formatEUR(row.billing_rate)));
+                let surchargeRateDisplay = '';
+                if (row.surcharge_rate !== null && row.surcharge_rate !== undefined) {{
+                    const percentage = row.surcharge_rate * 100;
+                    surchargeRateDisplay = percentage >= 100 ? Math.round(percentage) + '%' : percentage.toFixed(2) + '%';
                 }}
-                tr.append($('<td>').text(additionalRateDisplay));
+                tr.append($('<td>').text(surchargeRateDisplay));
                 tr.append($('<td>').text(row.hours ? row.hours.toFixed(1) : ''));
-                const displayAmount = (row.event_type === 'Working Time' && row.calculated_cost)
-                    ? row.calculated_cost
+                const displayAmount = (row.event_type === 'Working Time' && row.billable_amount)
+                    ? row.billable_amount
                     : (row.amount || 0);
                 tr.append($('<td>').text(formatEUR(displayAmount)));
 
@@ -994,12 +994,12 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         function sortTableData(data) {{
             const col = tableSortColumn;
             const dir = tableSortDirection === 'asc' ? 1 : -1;
-            const numericCols = ['index', 'hourly_rate', 'additional_rate', 'hours', 'amount'];
+            const numericCols = ['index', 'billing_rate', 'surcharge_rate', 'hours', 'amount'];
             return [...data].sort((a, b) => {{
                 let valA, valB;
                 if (col === 'amount') {{
-                    valA = (a.event_type === 'Working Time' && a.calculated_cost) ? a.calculated_cost : (a.amount || 0);
-                    valB = (b.event_type === 'Working Time' && b.calculated_cost) ? b.calculated_cost : (b.amount || 0);
+                    valA = (a.event_type === 'Working Time' && a.billable_amount) ? a.billable_amount : (a.amount || 0);
+                    valB = (b.event_type === 'Working Time' && b.billable_amount) ? b.billable_amount : (b.amount || 0);
                 }} else {{
                     valA = a[col];
                     valB = b[col];
@@ -1049,14 +1049,14 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         function renderCharts(data) {{
             // Financials by Project
             const projectPOCoverage = {{}};
-            const projectCosts = {{}};
+            const projectCharges = {{}};
             const projectInvoices = {{}};
             const projectDeferment = {{}};
             const projectFinancialRecord = {{}};
             const projectHours = {{}};
-            
-            // Timeline data: monthly costs and remaining budget
-            const monthlyCosts = {{}};
+
+            // Timeline data: monthly charges and remaining budget
+            const monthlyCharges = {{}};
             const monthlyPOCoverage = {{}};
             
             data.forEach(row => {{
@@ -1091,11 +1091,11 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     }}
                 }}
                 
-                // Costs by project (Working Time costs, Purchases, T&L - Deferment is NOT a cost)
-                if (eventType === 'Working Time' && row.calculated_cost) {{
-                    projectCosts[project] = (projectCosts[project] || 0) + row.calculated_cost;
+                // Charges by project (Working Time fees, Purchase/T&L expenses - Deferment is NOT a charge)
+                if (eventType === 'Working Time' && row.billable_amount) {{
+                    projectCharges[project] = (projectCharges[project] || 0) + row.billable_amount;
                 }} else if ((eventType === 'Purchase' || eventType === 'T&L') && amount) {{
-                    projectCosts[project] = (projectCosts[project] || 0) + amount;
+                    projectCharges[project] = (projectCharges[project] || 0) + amount;
                 }}
                 
                 // Invoices by project (includes Invoice events and positive deferment)
@@ -1124,11 +1124,11 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
                     }}
 
-                    // Monthly Costs (Deferment is NOT a cost)
-                    if (eventType === 'Working Time' && row.calculated_cost) {{
-                        monthlyCosts[month] = (monthlyCosts[month] || 0) + row.calculated_cost;
+                    // Monthly Charges (Deferment is NOT a charge)
+                    if (eventType === 'Working Time' && row.billable_amount) {{
+                        monthlyCharges[month] = (monthlyCharges[month] || 0) + row.billable_amount;
                     }} else if ((eventType === 'Purchase' || eventType === 'T&L') && amount) {{
-                        monthlyCosts[month] = (monthlyCosts[month] || 0) + amount;
+                        monthlyCharges[month] = (monthlyCharges[month] || 0) + amount;
                     }}
                 }}
             }});
@@ -1166,7 +1166,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             }}
             
             // Financials by Project Chart (PO Coverage, Costs, Invoices, Deferment)
-            const allProjects = [...new Set([...Object.keys(projectPOCoverage), ...Object.keys(projectCosts), ...Object.keys(projectInvoices), ...Object.keys(projectDeferment), ...Object.keys(projectFinancialRecord)])].sort();
+            const allProjects = [...new Set([...Object.keys(projectPOCoverage), ...Object.keys(projectCharges), ...Object.keys(projectInvoices), ...Object.keys(projectDeferment), ...Object.keys(projectFinancialRecord)])].sort();
             
             // Show/hide placeholder
             if (allProjects.length === 0) {{
@@ -1207,8 +1207,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             hidden: !checkboxStates[0]
                         }},
                         {{
-                            label: 'Costs (€)',
-                            data: allProjects.map(p => projectCosts[p] || 0),
+                            label: 'Charges (€)',
+                            data: allProjects.map(p => projectCharges[p] || 0),
                             backgroundColor: cc1.costs + '99',
                             borderColor: cc1.costs,
                             borderWidth: 1,
@@ -1240,7 +1240,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         }},
                         {{
                             label: 'Remaining Budget (€)',
-                            data: allProjects.map(p => (projectPOCoverage[p] || 0) - (projectCosts[p] || 0)),
+                            data: allProjects.map(p => (projectPOCoverage[p] || 0) - (projectCharges[p] || 0)),
                             backgroundColor: cc1.budget + '99',
                             borderColor: cc1.budget,
                             borderWidth: 1,
@@ -1399,8 +1399,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 }});
             }}
 
-            // Timeline Chart: Monthly Costs and Remaining Budget
-            const allMonths = [...new Set([...Object.keys(monthlyCosts), ...Object.keys(monthlyPOCoverage)])].sort();
+            // Timeline Chart: Monthly Charges and Remaining Budget
+            const allMonths = [...new Set([...Object.keys(monthlyCharges), ...Object.keys(monthlyPOCoverage)])].sort();
             
             // Show/hide placeholder
             if (allMonths.length === 0) {{
@@ -1412,15 +1412,15 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             if (allMonths.length > 0) {{
                 // Calculate cumulative values
                 let cumulativePOCoverage = 0;
-                let cumulativeCosts = 0;
+                let cumulativeCharges = 0;
                 const cumulativeRemainingBudget = [];
-                const monthlyCostsData = [];
-                
+                const monthlyChargesData = [];
+
                 allMonths.forEach(month => {{
                     cumulativePOCoverage += (monthlyPOCoverage[month] || 0);
-                    cumulativeCosts += (monthlyCosts[month] || 0);
-                    monthlyCostsData.push(monthlyCosts[month] || 0);
-                    cumulativeRemainingBudget.push(cumulativePOCoverage - cumulativeCosts);
+                    cumulativeCharges += (monthlyCharges[month] || 0);
+                    monthlyChargesData.push(monthlyCharges[month] || 0);
+                    cumulativeRemainingBudget.push(cumulativePOCoverage - cumulativeCharges);
                 }});
                 
                 const ctx4 = document.getElementById('timelineChart').getContext('2d');
@@ -1431,8 +1431,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         labels: allMonths,
                         datasets: [
                             {{
-                                label: 'Monthly Costs (€)',
-                                data: monthlyCostsData,
+                                label: 'Monthly Charges (€)',
+                                data: monthlyChargesData,
                                 borderColor: cc4.costs,
                                 backgroundColor: cc4.costs + '1a',
                                 tension: 0,
@@ -1489,7 +1489,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         
         function calculateProjectForecast(projectData) {{
             // Calculate monthly data for a single project
-            const monthlyCosts = {{}};
+            const monthlyCharges = {{}};
             const monthlyPOCoverage = {{}};
             let closureMonth = null;
             let closureDate = null;
@@ -1524,16 +1524,16 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                         monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
                     }}
 
-                    // Costs (for forecast trend calculation) - Deferment is NOT a cost
-                    if (eventType === 'Working Time' && row.calculated_cost) {{
-                        monthlyCosts[month] = (monthlyCosts[month] || 0) + row.calculated_cost;
+                    // Charges (for forecast trend calculation) - Deferment is NOT a charge
+                    if (eventType === 'Working Time' && row.billable_amount) {{
+                        monthlyCharges[month] = (monthlyCharges[month] || 0) + row.billable_amount;
                     }} else if ((eventType === 'Purchase' || eventType === 'T&L') && amount) {{
-                        monthlyCosts[month] = (monthlyCosts[month] || 0) + amount;
+                        monthlyCharges[month] = (monthlyCharges[month] || 0) + amount;
                     }}
                 }}
             }});
-            
-            const allMonths = [...new Set([...Object.keys(monthlyCosts), ...Object.keys(monthlyPOCoverage)])].sort();
+
+            const allMonths = [...new Set([...Object.keys(monthlyCharges), ...Object.keys(monthlyPOCoverage)])].sort();
             
             if (allMonths.length < 1) {{
                 return null;
@@ -1541,36 +1541,36 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             
             // Calculate cumulative remaining budget for actual data
             let cumulativePOCoverage = 0;
-            let cumulativeCosts = 0;
+            let cumulativeCharges = 0;
             const remainingBudgetData = [];
-            
+
             allMonths.forEach(month => {{
                 cumulativePOCoverage += (monthlyPOCoverage[month] || 0);
-                cumulativeCosts += (monthlyCosts[month] || 0);
-                remainingBudgetData.push(cumulativePOCoverage - cumulativeCosts);
+                cumulativeCharges += (monthlyCharges[month] || 0);
+                remainingBudgetData.push(cumulativePOCoverage - cumulativeCharges);
             }});
-            
+
             const n = allMonths.length;
             const lastActualBudget = remainingBudgetData[n - 1];
-            
-            // Calculate average monthly cost from last months
-            let avgMonthlyCost = 0;
-            const costMonths = Object.keys(monthlyCosts).sort();
-            
-            if (costMonths.length >= 2) {{
-                const lastCostMonth = costMonths[costMonths.length - 1];
-                const secondLastCostMonth = costMonths[costMonths.length - 2];
-                const lastCost = monthlyCosts[lastCostMonth];
-                const secondLastCost = monthlyCosts[secondLastCostMonth];
-                avgMonthlyCost = (lastCost + secondLastCost) / 2;
-            }} else if (costMonths.length === 1) {{
-                avgMonthlyCost = monthlyCosts[costMonths[0]];
+
+            // Calculate average monthly charge from last months
+            let avgMonthlyCharge = 0;
+            const chargeMonths = Object.keys(monthlyCharges).sort();
+
+            if (chargeMonths.length >= 2) {{
+                const lastChargeMonth = chargeMonths[chargeMonths.length - 1];
+                const secondLastChargeMonth = chargeMonths[chargeMonths.length - 2];
+                const lastCharge = monthlyCharges[lastChargeMonth];
+                const secondLastCharge = monthlyCharges[secondLastChargeMonth];
+                avgMonthlyCharge = (lastCharge + secondLastCharge) / 2;
+            }} else if (chargeMonths.length === 1) {{
+                avgMonthlyCharge = monthlyCharges[chargeMonths[0]];
             }} else if (n >= 2) {{
                 const lastIndex = n - 1;
                 const secondLastIndex = n - 2;
                 const lastValue = remainingBudgetData[lastIndex];
                 const secondLastValue = remainingBudgetData[secondLastIndex];
-                avgMonthlyCost = Math.max(0, secondLastValue - lastValue);
+                avgMonthlyCharge = Math.max(0, secondLastValue - lastValue);
             }}
             
             // Calculate forecast
@@ -1608,10 +1608,10 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     break;
                 }}
                 
-                // Forecast: ONLY subtract costs, never increase budget
+                // Forecast: ONLY subtract charges, never increase budget
                 // PO coverage from table is only used in actual data, not in forecast
-                // Forecast can only decrease (costs), never increase
-                currentBudget = currentBudget - avgMonthlyCost;
+                // Forecast can only decrease (charges), never increase
+                currentBudget = currentBudget - avgMonthlyCharge;
                 
                 // If this is the Closure month, save the budget value
                 if (forecastUntilMonth && nextMonthStr === forecastUntilMonth) {{
@@ -1697,7 +1697,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
             let allMonths, remainingBudgetData, forecastData, forecastLabels, forecastEndIndex, n;
             let projectForecasts = {{}};  // Initialize for both cases
             let forecast = null;  // Initialize for both cases
-            let monthsWithCosts = new Set();  // Initialize for both cases
+            let monthsWithCharges = new Set();  // Initialize for both cases
             let lastActualMonth = '';  // Initialize for both cases
             
             if (isAllProjects) {{
@@ -1751,8 +1751,8 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     }}
                 }});
                 
-                // Find months that have cost events (same logic as table)
-                monthsWithCosts = new Set();
+                // Find months that have charge events (same logic as table)
+                monthsWithCharges = new Set();
                 projects.forEach(project => {{
                     const projectData = allData.filter(row => row.project === project);
                     projectData.forEach(row => {{
@@ -1763,7 +1763,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             const month = date.substring(0, 7);
                             if (eventType === 'Working Time' || eventType === 'Purchase' || 
                                 eventType === 'T&L' || eventType === 'Deferment') {{
-                                monthsWithCosts.add(month);
+                                monthsWithCharges.add(month);
                             }}
                         }}
                     }});
@@ -1809,7 +1809,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 forecastData = [...remainingBudgetData];
                 
                 // Count actual months with costs
-                n = allMonths.filter(m => monthsWithCosts.has(m) && m <= lastActualMonth).length;
+                n = allMonths.filter(m => monthsWithCharges.has(m) && m <= lastActualMonth).length;
                 
                 // Get filtered date range
                 const dateTo = $('#dateTo').val();
@@ -1851,18 +1851,18 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 forecastEndIndex = forecast.forecastEndIndex;
                 n = forecast.n;
                 
-                // Find months that have cost events for individual project
-                monthsWithCosts = new Set();
+                // Find months that have charge events for individual project
+                monthsWithCharges = new Set();
                 projectData.forEach(row => {{
                     const eventType = row.event_type || '';
                     const date = row.date || '';
                     
-                    // Check if this is a cost event (not PO, Invoice, or Closure)
+                    // Check if this is a charge event (not PO, Invoice, or Closure)
                     if (date && date.length >= 7) {{
                         const month = date.substring(0, 7);
                         if (eventType === 'Working Time' || eventType === 'Purchase' || 
                             eventType === 'T&L' || eventType === 'Deferment') {{
-                            monthsWithCosts.add(month);
+                            monthsWithCharges.add(month);
                         }}
                     }}
                 }});
@@ -2205,13 +2205,13 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     if (!monthlySummary[month]) {{
                         monthlySummary[month] = {{
                             hours: 0,
-                            cost: 0,
+                            fees: 0,
                             projects: new Set()
                         }};
                     }}
                     monthlySummary[month].hours += row.hours || 0;
-                    if (row.calculated_cost) {{
-                        monthlySummary[month].cost += row.calculated_cost;
+                    if (row.billable_amount) {{
+                        monthlySummary[month].fees += row.billable_amount;
                     }}
                     if (row.project) {{
                         monthlySummary[month].projects.add(row.project);
@@ -2227,7 +2227,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const tr = $('<tr>');
                 tr.append($('<td>').text(month));
                 tr.append($('<td>').text(data.hours.toFixed(1)));
-                tr.append($('<td>').text(formatEUR(data.cost)));
+                tr.append($('<td>').text(formatEUR(data.fees)));
                 tr.append($('<td>').text(Array.from(data.projects).join(', ')));
                 tbody.append(tr);
             }});
@@ -2242,9 +2242,9 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     projectStats[project] = {{
                         poCoverage: 0,
                         invoices: 0,
-                        workingTimeCosts: 0,
-                        purchaseCosts: 0,
-                        tlCosts: 0,
+                        workingTimeFees: 0,
+                        purchaseExpenses: 0,
+                        tlExpenses: 0,
                         deferment: 0,
                         financialRecord: 0,
                         positiveFinancialRecord: 0,
@@ -2261,12 +2261,12 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     projectStats[project].poCoverage += amount;
                 }} else if (eventType === 'Invoice') {{
                     projectStats[project].invoices += amount;  // Informational only
-                }} else if (eventType === 'Working Time' && row.calculated_cost) {{
-                    projectStats[project].workingTimeCosts += row.calculated_cost;
+                }} else if (eventType === 'Working Time' && row.billable_amount) {{
+                    projectStats[project].workingTimeFees += row.billable_amount;
                 }} else if (eventType === 'Purchase') {{
-                    projectStats[project].purchaseCosts += amount;
+                    projectStats[project].purchaseExpenses += amount;
                 }} else if (eventType === 'T&L') {{
-                    projectStats[project].tlCosts += amount;
+                    projectStats[project].tlExpenses += amount;
                 }} else if (eventType === 'Deferment') {{
                     projectStats[project].deferment += amount;  // Can be positive or negative
                     // Positive deferment: add to PO coverage and count as invoiced
@@ -2298,40 +2298,40 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
 
             Object.keys(projectStats).sort().forEach(project => {{
                 const stats = projectStats[project];
-                // Total costs = Working Time + Purchase + T&L (Deferment is NOT a cost)
-                const totalCosts = stats.workingTimeCosts + stats.purchaseCosts + stats.tlCosts;
-                // Remaining budget = PO Coverage - Total Costs (invoices are informational only)
-                const remainingBudget = stats.poCoverage - totalCosts;
+                // Total charges = Working Time fees + Purchase expenses + T&L expenses (Deferment is NOT a charge)
+                const totalCharges = stats.workingTimeFees + stats.purchaseExpenses + stats.tlExpenses;
+                // Remaining budget = PO Coverage - Total Charges (invoices are informational only)
+                const remainingBudget = stats.poCoverage - totalCharges;
                 const budgetStatus = remainingBudget >= 0 ? 'positive' : 'negative';
                 
-                // Calculate monthly cost forecast rate (same logic as calculateProjectForecast)
-                const monthlyCosts = {{}};
+                // Calculate monthly charge forecast rate (same logic as calculateProjectForecast)
+                const monthlyCharges = {{}};
                 stats.events.forEach(row => {{
                     const eventType = row.event_type || '';
                     const date = row.date || '';
                     const amount = row.amount || 0;
-                    
+
                     if (date && date.length >= 7) {{
                         const month = date.substring(0, 7);
-                        // Costs for forecast calculation - Deferment is NOT a cost
-                        if (eventType === 'Working Time' && row.calculated_cost) {{
-                            monthlyCosts[month] = (monthlyCosts[month] || 0) + row.calculated_cost;
+                        // Charges for forecast calculation - Deferment is NOT a charge
+                        if (eventType === 'Working Time' && row.billable_amount) {{
+                            monthlyCharges[month] = (monthlyCharges[month] || 0) + row.billable_amount;
                         }} else if ((eventType === 'Purchase' || eventType === 'T&L') && amount) {{
-                            monthlyCosts[month] = (monthlyCosts[month] || 0) + amount;
+                            monthlyCharges[month] = (monthlyCharges[month] || 0) + amount;
                         }}
                     }}
                 }});
-                
-                let avgMonthlyCost = 0;
-                const costMonths = Object.keys(monthlyCosts).sort();
-                if (costMonths.length >= 2) {{
-                    const lastCostMonth = costMonths[costMonths.length - 1];
-                    const secondLastCostMonth = costMonths[costMonths.length - 2];
-                    const lastCost = monthlyCosts[lastCostMonth];
-                    const secondLastCost = monthlyCosts[secondLastCostMonth];
-                    avgMonthlyCost = (lastCost + secondLastCost) / 2;
-                }} else if (costMonths.length === 1) {{
-                    avgMonthlyCost = monthlyCosts[costMonths[0]];
+
+                let avgMonthlyCharge = 0;
+                const chargeMonths = Object.keys(monthlyCharges).sort();
+                if (chargeMonths.length >= 2) {{
+                    const lastChargeMonth = chargeMonths[chargeMonths.length - 1];
+                    const secondLastChargeMonth = chargeMonths[chargeMonths.length - 2];
+                    const lastCharge = monthlyCharges[lastChargeMonth];
+                    const secondLastCharge = monthlyCharges[secondLastChargeMonth];
+                    avgMonthlyCharge = (lastCharge + secondLastCharge) / 2;
+                }} else if (chargeMonths.length === 1) {{
+                    avgMonthlyCharge = monthlyCharges[chargeMonths[0]];
                 }}
                 
                 // Calculate forecast to get closure date and EAC
@@ -2371,9 +2371,9 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                             statusClass = 'red';
                         }}
                     }}
-                }} else if (avgMonthlyCost > 0 && stats.poCoverage > 0) {{
+                }} else if (avgMonthlyCharge > 0 && stats.poCoverage > 0) {{
                     // For open projects, calculate forecast for next month
-                    let lastForecastBudget = remainingBudget - avgMonthlyCost;
+                    let lastForecastBudget = remainingBudget - avgMonthlyCharge;
                     
                     if (lastForecastBudget > 0) {{
                         statusClass = 'green';
@@ -2410,11 +2410,11 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 
                 // Format EUR values
                 const poCoverageFormatted = formatEUR(stats.poCoverage);
-                const totalCostsFormatted = formatEUR(totalCosts);
+                const totalChargesFormatted = formatEUR(totalCharges);
                 const invoicesFormatted = formatEUR(stats.invoices);
-                // Coverage gap = (Invoiced + Positive Financial Record) - Total Costs
+                // Coverage gap = (Invoiced + Positive Financial Record) - Total Charges
                 // Negative = missing coverage, Positive = overcovered
-                const coverageGap = (stats.invoices + stats.positiveFinancialRecord) - totalCosts;
+                const coverageGap = (stats.invoices + stats.positiveFinancialRecord) - totalCharges;
 
                 // Determine label and display value
                 let missingInvoiceLabel = 'Missing Coverage/Overcovered';
@@ -2440,12 +2440,12 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 
                 const missingInvoiceStyle = missingInvoiceColor ? `style="color: ${{missingInvoiceColor}}"` : '';
                 const remainingBudgetFormatted = formatEUR(remainingBudget);
-                const workingTimeCostsFormatted = formatEUR(stats.workingTimeCosts);
-                const purchaseCostsFormatted = formatEUR(stats.purchaseCosts);
-                const tlCostsFormatted = formatEUR(stats.tlCosts);
+                const workingTimeFeesFormatted = formatEUR(stats.workingTimeFees);
+                const purchaseExpensesFormatted = formatEUR(stats.purchaseExpenses);
+                const tlExpensesFormatted = formatEUR(stats.tlExpenses);
                 const defermentFormatted = formatEUR(stats.deferment || 0);
                 const financialRecordFormatted = formatEUR(stats.financialRecord || 0);
-                const forecastRateFormatted = formatEUR(avgMonthlyCost);
+                const forecastRateFormatted = formatEUR(avgMonthlyCharge);
                 
                 // Format closure date (already retrieved above)
                 let closureDateFormatted = '-';
@@ -2468,22 +2468,22 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 const eacColor = (forecast && forecast.closureBudget !== null && forecast.closureBudget !== undefined && forecast.closureBudget < 0) ? 'var(--color-negative)' : '';
                 const eacStyle = eacColor ? `style="color: ${{eacColor}}"` : '';
                 
-                // Cost/Invoiced per project
-                let costInvoicedFormatted = '-';
-                if (totalCosts > 0 && stats.invoices > 0) {{
-                    costInvoicedFormatted = (stats.invoices / totalCosts * 100).toFixed(1) + '%';
+                // Charges/Invoiced per project
+                let chargesInvoicedFormatted = '-';
+                if (totalCharges > 0 && stats.invoices > 0) {{
+                    chargesInvoicedFormatted = (stats.invoices / totalCharges * 100).toFixed(1) + '%';
                 }} else if (stats.invoices > 0) {{
-                    costInvoicedFormatted = '∞';
-                }} else if (totalCosts === 0) {{
-                    costInvoicedFormatted = '-';
+                    chargesInvoicedFormatted = '∞';
+                }} else if (totalCharges === 0) {{
+                    chargesInvoicedFormatted = '-';
                 }}
 
-                // Coverage = Cost / (Invoiced + Positive Financial Record)
+                // Coverage = Charges / (Invoiced + Positive Financial Record)
                 const coverageDenom = stats.invoices + stats.positiveFinancialRecord;
                 let coverageFormatted = '-';
-                if (coverageDenom > 0 && totalCosts > 0) {{
-                    coverageFormatted = (totalCosts / coverageDenom * 100).toFixed(1) + '%';
-                }} else if (totalCosts === 0 && coverageDenom >= 0) {{
+                if (coverageDenom > 0 && totalCharges > 0) {{
+                    coverageFormatted = (totalCharges / coverageDenom * 100).toFixed(1) + '%';
+                }} else if (totalCharges === 0 && coverageDenom >= 0) {{
                     coverageFormatted = '0%';
                 }}
 
@@ -2495,7 +2495,7 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                 if (closureDate && closureDate.substring(0, 10) <= generationDate) {{
                     projectStatus = 'Closed';
                     projectStatusClass = 'closed';
-                }} else if (totalCosts === 0) {{
+                }} else if (totalCharges === 0) {{
                     projectStatus = 'Planned';
                     projectStatusClass = 'planned';
                 }}
@@ -2510,16 +2510,16 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                                 <div class="project-stat-value">${{poCoverageFormatted}}</div>
                             </div>
                             <div class="project-stat cost-highlight">
-                                <div class="project-stat-label">Total Costs</div>
-                                <div class="project-stat-value">${{totalCostsFormatted}}</div>
+                                <div class="project-stat-label">Total Charges</div>
+                                <div class="project-stat-value">${{totalChargesFormatted}}</div>
                             </div>
                             <div class="project-stat cost-highlight">
                                 <div class="project-stat-label">EAC</div>
                                 <div class="project-stat-value" ${{eacStyle}}>${{eacFormatted}}</div>
                             </div>
                             <div class="project-stat cost-highlight">
-                                <div class="project-stat-label">Cost/Invoiced</div>
-                                <div class="project-stat-value">${{costInvoicedFormatted}}</div>
+                                <div class="project-stat-label">Charges/Invoiced</div>
+                                <div class="project-stat-value">${{chargesInvoicedFormatted}}</div>
                             </div>
                             <div class="project-stat cost-highlight">
                                 <div class="project-stat-label">Coverage</div>
@@ -2538,16 +2538,16 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                                 <div class="project-stat-value" style="color: ${{budgetStatus === 'positive' ? 'var(--color-positive)' : 'var(--color-negative)'}}">${{remainingBudgetFormatted}}</div>
                             </div>
                             <div class="project-stat">
-                                <div class="project-stat-label">Working Time Costs</div>
-                                <div class="project-stat-value">${{workingTimeCostsFormatted}}</div>
+                                <div class="project-stat-label">Working Time Fees</div>
+                                <div class="project-stat-value">${{workingTimeFeesFormatted}}</div>
                             </div>
                             <div class="project-stat">
-                                <div class="project-stat-label">Purchase Costs</div>
-                                <div class="project-stat-value">${{purchaseCostsFormatted}}</div>
+                                <div class="project-stat-label">Purchase Expenses</div>
+                                <div class="project-stat-value">${{purchaseExpensesFormatted}}</div>
                             </div>
                             <div class="project-stat">
-                                <div class="project-stat-label">T&L Costs</div>
-                                <div class="project-stat-value">${{tlCostsFormatted}}</div>
+                                <div class="project-stat-label">T&L Expenses</div>
+                                <div class="project-stat-value">${{tlExpensesFormatted}}</div>
                             </div>
                             <div class="project-stat">
                                 <div class="project-stat-label">Deferment</div>
@@ -2584,10 +2584,10 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
         }}
 
         function exportToCSV() {{
-            const headers = ['#', 'Date', 'Event Type', 'Project', 'Sheet', 'Hourly Rate', 'Additional Rate', 'Hours', 'Amount', 'Calculated Cost', 'Comment'];
+            const headers = ['#', 'Date', 'Event Type', 'Project', 'Sheet', 'Billing Rate', 'Surcharge Rate', 'Hours', 'Amount', 'Billable Amount', 'Comment'];
             const rows = filteredData.map(row => {{
-                const displayAmount = (row.event_type === 'Working Time' && row.calculated_cost)
-                    ? row.calculated_cost
+                const displayAmount = (row.event_type === 'Working Time' && row.billable_amount)
+                    ? row.billable_amount
                     : (row.amount || '');
                 return [
                     row.index || '',
@@ -2595,17 +2595,17 @@ def get_html_template(projects, event_types, total_po_coverage, total_costs,
                     row.event_type || '',
                     row.project || '',
                     row.sheet || '',
-                    formatEUR(row.hourly_rate).replace('€', '') || '',
+                    formatEUR(row.billing_rate).replace('€', '') || '',
                     (() => {{
-                        if (row.additional_rate !== null && row.additional_rate !== undefined) {{
-                            const percentage = row.additional_rate * 100;
+                        if (row.surcharge_rate !== null && row.surcharge_rate !== undefined) {{
+                            const percentage = row.surcharge_rate * 100;
                             return percentage >= 100 ? Math.round(percentage) + '%' : percentage.toFixed(2) + '%';
                         }}
                         return '';
                     }})(),
                     row.hours || '',
                     formatEUR(displayAmount).replace('€', '') || '',
-                    (row.event_type === 'Working Time' && row.calculated_cost) ? formatEUR(row.calculated_cost).replace('€', '') : '',
+                    (row.event_type === 'Working Time' && row.billable_amount) ? formatEUR(row.billable_amount).replace('€', '') : '',
                     (row.comment || '').replace(/"/g, '""')
                 ];
             }});

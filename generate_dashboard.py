@@ -34,7 +34,7 @@ def generate_html(records):
     totals = calculate_totals(project_financials, records)
     total_po_coverage = totals['total_po_coverage']
     total_invoices = totals['total_invoices']
-    total_costs = totals['total_costs']
+    total_charges = totals['total_charges']
     total_hours = totals['total_hours']
     
     # Find date range
@@ -56,7 +56,7 @@ def generate_html(records):
         projects=projects,
         event_types=event_types,
         total_po_coverage=total_po_coverage,
-        total_costs=total_costs,
+        total_charges=total_charges,
         total_invoices=total_invoices,
         total_hours=total_hours,
         date_from=date_from,
