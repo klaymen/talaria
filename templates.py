@@ -7,9 +7,7 @@ from datetime import datetime
 from styles import get_css
 
 
-def get_html_template(projects, event_types, total_po_coverage, total_charges,
-                     total_invoices, total_hours, date_from, date_to,
-                     data_json, financials_json, monthly_summary_json):
+def get_html_template(event_types, date_from, date_to, data_json):
     """Generate HTML template with embedded data."""
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -147,27 +145,27 @@ def get_html_template(projects, event_types, total_po_coverage, total_charges,
             </div>
             <div class="summary-card">
                 <h3>Budget</h3>
-                <div class="summary-value" id="totalPOCoverage">€{total_po_coverage:,.2f}</div>
+                <div class="summary-value" id="totalPOCoverage">-</div>
             </div>
             <div class="summary-card">
                 <h3>Total Charges</h3>
-                <div class="summary-value" id="totalCharges">€{total_charges:,.2f}</div>
+                <div class="summary-value" id="totalCharges">-</div>
             </div>
             <div class="summary-card">
                 <h3>Total Invoices</h3>
-                <div class="summary-value" id="totalInvoices">€{total_invoices:,.2f}</div>
+                <div class="summary-value" id="totalInvoices">-</div>
             </div>
             <div class="summary-card">
                 <h3 id="missingInvoiceLabel">Missing Coverage/Overcovered</h3>
-                <div class="summary-value" id="missingInvoice">€{total_invoices - total_charges:,.2f}</div>
+                <div class="summary-value" id="missingInvoice">-</div>
             </div>
             <div class="summary-card">
                 <h3>Remaining Budget</h3>
-                <div class="summary-value" id="remainingBudget">€{total_po_coverage - total_charges:,.2f}</div>
+                <div class="summary-value" id="remainingBudget">-</div>
             </div>
             <div class="summary-card">
                 <h3>Total Hours</h3>
-                <div class="summary-value" id="totalHours">{total_hours:,.0f}</div>
+                <div class="summary-value" id="totalHours">-</div>
             </div>
         </div>
 
@@ -402,8 +400,6 @@ def get_html_template(projects, event_types, total_po_coverage, total_charges,
 
         // Embedded data
         const allData = {data_json};
-        const projectFinancials = {financials_json};
-        const monthlyWorkingTime = {monthly_summary_json};
         const generationDate = '{datetime.now().strftime('%Y-%m-%d')}';
         let filteredData = [...allData];
 
