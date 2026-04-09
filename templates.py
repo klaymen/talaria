@@ -196,6 +196,10 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 <div class="quick-filters">
                     <h3>Quick Filters</h3>
                     <div class="quick-filter-group">
+                        <label>Status:</label>
+                        <div class="quick-filter-buttons" id="statusFilters"></div>
+                    </div>
+                    <div class="quick-filter-group">
                         <label>Projects:</label>
                         <div class="quick-filter-buttons" id="projectFilters"></div>
                     </div>
@@ -504,17 +508,136 @@ def get_html_template(event_types, date_from, date_to, data_json):
             $('#exportBtn').on('click', exportToCSV);
         }});
         
+        // Compute forecast status (green/yellow/red) for every project, using the
+        // full dataset so the classification stays stable regardless of filters.
+        function computeProjectStatuses(data) {{
+            const projectStats = {{}};
+            data.forEach(row => {{
+                const project = row.project || 'Unknown';
+                if (!projectStats[project]) {{
+                    projectStats[project] = {{
+                        poCoverage: 0,
+                        workingTimeFees: 0,
+                        purchaseExpenses: 0,
+                        tlExpenses: 0,
+                        events: []
+                    }};
+                }}
+                const eventType = row.event_type || '';
+                const amount = row.amount || 0;
+                if (eventType === 'PO') {{
+                    projectStats[project].poCoverage += amount;
+                }} else if (eventType === 'Working Time' && row.billable_amount) {{
+                    projectStats[project].workingTimeFees += row.billable_amount;
+                }} else if (eventType === 'Purchase') {{
+                    projectStats[project].purchaseExpenses += amount;
+                }} else if (eventType === 'T&L') {{
+                    projectStats[project].tlExpenses += amount;
+                }} else if (eventType === 'Deferment') {{
+                    projectStats[project].poCoverage += amount;
+                }} else if (eventType === 'Financial Record' && amount < 0) {{
+                    projectStats[project].poCoverage += amount;
+                }}
+                projectStats[project].events.push(row);
+            }});
+
+            const statuses = {{}};
+            Object.keys(projectStats).forEach(project => {{
+                const stats = projectStats[project];
+                const totalCharges = stats.workingTimeFees + stats.purchaseExpenses + stats.tlExpenses;
+                const remainingBudget = stats.poCoverage - totalCharges;
+
+                const monthlyCharges = {{}};
+                stats.events.forEach(row => {{
+                    const eventType = row.event_type || '';
+                    const date = row.date || '';
+                    const amount = row.amount || 0;
+                    if (date && date.length >= 7) {{
+                        const month = date.substring(0, 7);
+                        if (eventType === 'Working Time' && row.billable_amount) {{
+                            monthlyCharges[month] = (monthlyCharges[month] || 0) + row.billable_amount;
+                        }} else if ((eventType === 'Purchase' || eventType === 'T&L') && amount) {{
+                            monthlyCharges[month] = (monthlyCharges[month] || 0) + amount;
+                        }}
+                    }}
+                }});
+
+                let avgMonthlyCharge = 0;
+                const chargeMonths = Object.keys(monthlyCharges).sort();
+                if (chargeMonths.length >= 2) {{
+                    const lastCharge = monthlyCharges[chargeMonths[chargeMonths.length - 1]];
+                    const secondLastCharge = monthlyCharges[chargeMonths[chargeMonths.length - 2]];
+                    avgMonthlyCharge = (lastCharge + secondLastCharge) / 2;
+                }} else if (chargeMonths.length === 1) {{
+                    avgMonthlyCharge = monthlyCharges[chargeMonths[0]];
+                }}
+
+                let closureDate = null;
+                stats.events.forEach(row => {{
+                    if (row.event_type === 'Closure' && row.date) {{
+                        closureDate = row.date;
+                    }}
+                }});
+
+                const forecast = calculateProjectForecast(stats.events);
+                let eac = null;
+                if (forecast && forecast.closureBudget !== null && forecast.closureBudget !== undefined) {{
+                    eac = forecast.closureBudget;
+                }}
+
+                let statusClass = 'green';
+                if (closureDate && eac !== null) {{
+                    if (eac >= 0) {{
+                        statusClass = 'green';
+                    }} else {{
+                        const budgetThreshold = Math.abs(stats.poCoverage * 0.1);
+                        statusClass = Math.abs(eac) <= budgetThreshold ? 'yellow' : 'red';
+                    }}
+                }} else if (avgMonthlyCharge > 0 && stats.poCoverage > 0) {{
+                    const lastForecastBudget = remainingBudget - avgMonthlyCharge;
+                    if (lastForecastBudget > 0) {{
+                        statusClass = 'green';
+                    }} else {{
+                        const budgetThreshold = Math.abs(stats.poCoverage * 0.1);
+                        statusClass = Math.abs(lastForecastBudget) <= budgetThreshold ? 'yellow' : 'red';
+                    }}
+                }} else if (remainingBudget > 0) {{
+                    statusClass = 'green';
+                }} else if (remainingBudget < 0) {{
+                    statusClass = 'red';
+                }}
+
+                statuses[project] = statusClass;
+            }});
+            return statuses;
+        }}
+
+        // Cache for project statuses, keyed against the full dataset. Computed lazily.
+        let projectStatusesCache = null;
+        function getProjectStatuses() {{
+            if (projectStatusesCache === null) {{
+                projectStatusesCache = computeProjectStatuses(allData);
+            }}
+            return projectStatusesCache;
+        }}
+
         function applyFilters() {{
             // Get selected project from quick filter buttons
             const selectedProjectBtn = $('.quick-filter-btn[data-project].active');
             const project = selectedProjectBtn.length > 0 ? selectedProjectBtn.data('project') : 'all';
-            
+
+            // Get selected status from quick filter buttons
+            const selectedStatusBtn = $('.quick-filter-btn[data-status].active');
+            const status = selectedStatusBtn.length > 0 ? selectedStatusBtn.data('status') : 'all';
+            const projectStatuses = status !== 'all' ? getProjectStatuses() : null;
+
             const eventType = $('#eventTypeFilter').val();
             const dateFrom = $('#dateFrom').val();
             const dateTo = $('#dateTo').val();
-            
+
             filteredData = allData.filter(row => {{
                 if (project !== 'all' && row.project !== project) return false;
+                if (status !== 'all' && projectStatuses[row.project || 'Unknown'] !== status) return false;
                 if (eventType !== 'all' && row.event_type !== eventType) return false;
                 if (dateFrom && row.date < dateFrom) return false;
                 if (dateTo && row.date > dateTo) return false;
@@ -531,10 +654,6 @@ def get_html_template(event_types, date_from, date_to, data_json):
         }}
         
         function clearFilters() {{
-            // Reset project filter to "All Projects"
-            $('.quick-filter-btn[data-project]').removeClass('active');
-            $('.quick-filter-btn[data-project][data-project="all"]').addClass('active');
-            
             $('#eventTypeFilter').val('all');
             // Reset to first and last event dates
             const dates = allData.map(r => r.date).filter(d => d).map(d => {{
@@ -550,8 +669,10 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 $('#dateFrom').val('');
                 $('#dateTo').val('');
             }}
-            // Remove active class from quick filter buttons
+            // Remove active class from all quick filter buttons, then restore defaults
             $('.quick-filter-btn').removeClass('active');
+            $('.quick-filter-btn[data-project="all"]').addClass('active');
+            $('.quick-filter-btn[data-status="all"]').addClass('active');
             filteredData = [...allData];
             // Get selected project from quick filter buttons
             const selectedProjectBtn = $('.quick-filter-btn[data-project].active');
@@ -565,6 +686,33 @@ def get_html_template(event_types, date_from, date_to, data_json):
         }}
         
         function initializeQuickFilters() {{
+            // Generate status quick filters (Green/Yellow/Red)
+            const statusFilters = $('#statusFilters');
+            statusFilters.empty();
+
+            const allStatusesBtn = $('<button class="quick-filter-btn active" data-status="all">All Statuses</button>');
+            allStatusesBtn.on('click', function() {{
+                $('.quick-filter-btn[data-status]').removeClass('active');
+                $(this).addClass('active');
+                applyFilters();
+            }});
+            statusFilters.append(allStatusesBtn);
+
+            const statusLabels = [
+                {{key: 'green', label: 'Green'}},
+                {{key: 'yellow', label: 'Yellow'}},
+                {{key: 'red', label: 'Red'}}
+            ];
+            statusLabels.forEach(s => {{
+                const btn = $(`<button class="quick-filter-btn status-${{s.key}}" data-status="${{s.key}}">${{s.label}}</button>`);
+                btn.on('click', function() {{
+                    $('.quick-filter-btn[data-status]').removeClass('active');
+                    $(this).addClass('active');
+                    applyFilters();
+                }});
+                statusFilters.append(btn);
+            }});
+
             // Generate project quick filters
             const projectFilters = $('#projectFilters');
             projectFilters.empty();
@@ -658,7 +806,8 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 financialYears.forEach(fy => {{
                     const btn = $(`<button class="quick-filter-btn" data-start="${{fy.start}}" data-end="${{fy.end}}">${{fy.label}}</button>`);
                     btn.on('click', function() {{
-                        $('.quick-filter-btn').removeClass('active');
+                        // Only reset other date-range buttons, leave project/status intact
+                        $('#financialFilters .quick-filter-btn, #monthFilters .quick-filter-btn').removeClass('active');
                         $(this).addClass('active');
                         $('#dateFrom').val(fy.start);
                         $('#dateTo').val(fy.end);
@@ -731,7 +880,8 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 quarters.forEach(q => {{
                     const btn = $(`<button class="quick-filter-btn" data-start="${{q.start}}" data-end="${{q.end}}">${{q.label}}</button>`);
                     btn.on('click', function() {{
-                        $('.quick-filter-btn').removeClass('active');
+                        // Only reset other date-range buttons, leave project/status intact
+                        $('#financialFilters .quick-filter-btn, #monthFilters .quick-filter-btn').removeClass('active');
                         $(this).addClass('active');
                         $('#dateFrom').val(q.start);
                         $('#dateTo').val(q.end);
@@ -770,7 +920,8 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     
                     const btn = $(`<button class="quick-filter-btn" data-start="${{firstDay}}" data-end="${{lastDayStr}}">${{monthLabel}}</button>`);
                     btn.on('click', function() {{
-                        $('.quick-filter-btn').removeClass('active');
+                        // Only reset other date-range buttons, leave project/status intact
+                        $('#financialFilters .quick-filter-btn, #monthFilters .quick-filter-btn').removeClass('active');
                         $(this).addClass('active');
                         $('#dateFrom').val(firstDay);
                         $('#dateTo').val(lastDayStr);
