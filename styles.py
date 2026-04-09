@@ -530,6 +530,40 @@ def get_css():
         border-color: var(--color-primary);
         }
 
+        /* Status filter dots — small color indicator inside the button */
+        .quick-filter-btn.status-green::before,
+        .quick-filter-btn.status-yellow::before,
+        .quick-filter-btn.status-red::before {
+        content: '';
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+        vertical-align: middle;
+        }
+        .quick-filter-btn.status-green::before { background: var(--color-positive); }
+        .quick-filter-btn.status-yellow::before { background: var(--color-warning); }
+        .quick-filter-btn.status-red::before { background: var(--color-negative); }
+
+        .quick-filter-btn.status-green.active {
+        background: var(--color-positive);
+        border-color: var(--color-positive);
+        }
+        .quick-filter-btn.status-yellow.active {
+        background: var(--color-warning);
+        border-color: var(--color-warning);
+        }
+        .quick-filter-btn.status-red.active {
+        background: var(--color-negative);
+        border-color: var(--color-negative);
+        }
+        .quick-filter-btn.status-green.active::before,
+        .quick-filter-btn.status-yellow.active::before,
+        .quick-filter-btn.status-red.active::before {
+        background: white;
+        }
+
         .charts-section {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
