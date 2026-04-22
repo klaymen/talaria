@@ -96,7 +96,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     <li><strong>Budget:</strong> Total Purchase Order coverage for the project</li>
                     <li><strong>Total Charges:</strong> Sum of all charge types (Working Time fees + Purchase expenses + T&amp;L expenses)</li>
                     <li><strong>Closure Date:</strong> Project end date (from Closure events)</li>
-                    <li><strong>EAC (Estimated At Completion):</strong> Forecasted remaining budget at closure</li>
+                    <li><strong>EAC / Final Budget:</strong> For active projects, the Estimated At Completion (forecasted remaining budget at closure). For closed projects, the actual final remaining budget.</li>
                     <li><strong>Invoices:</strong> Total invoiced amounts</li>
                     <li><strong>Missing Coverage/Overcovered:</strong> (Invoiced + Positive Financial Record) minus Total Charges</li>
                     <li><strong>Remaining Budget:</strong> Current budget status (green if positive, red if negative)</li>
@@ -113,7 +113,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 <p><strong>Red box:</strong> Forecasted budget is significantly negative (beyond 10% threshold or current budget already negative)</p>
 
                 <h3>Filters</h3>
-                <p>Use the filter section to filter data by date range, project, or event type. Quick filters are available for financial years, quarters, and months.</p>
+                <p>Use the filter section to filter data by date range, project, event type, or forecast status (Green/Yellow/Red). Quick filters are available for financial years, quarters, and months.</p>
             </div>
         </div>
 
@@ -1990,43 +1990,55 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     return;
                 }}
                 $('#forecastChartPlaceholder').removeClass('show');
-                
+
                 allMonths = forecast.allMonths;
                 remainingBudgetData = forecast.remainingBudgetData;
                 forecastData = forecast.forecastData;
                 forecastLabels = forecast.forecastLabels;
                 forecastEndIndex = forecast.forecastEndIndex;
                 n = forecast.n;
-                
+
                 // Find months that have charge events for individual project
                 monthsWithCharges = new Set();
                 projectData.forEach(row => {{
                     const eventType = row.event_type || '';
                     const date = row.date || '';
-                    
+
                     // Check if this is a charge event (not PO, Invoice, or Closure)
                     if (date && date.length >= 7) {{
                         const month = date.substring(0, 7);
-                        if (eventType === 'Working Time' || eventType === 'Purchase' || 
+                        if (eventType === 'Working Time' || eventType === 'Purchase' ||
                             eventType === 'T&L' || eventType === 'Deferment') {{
                             monthsWithCharges.add(month);
                         }}
                     }}
                 }});
-                
+
                 // Find last actual month for individual project
                 if (forecast.allMonths.length > 0) {{
                     lastActualMonth = forecast.allMonths[forecast.allMonths.length - 1];
                 }}
-                
-                // If Closure exists, for individual projects: extend forecast to closure + 1 month
-                if (forecast.closureMonth && forecast.closureBudget !== null) {{
-                    // Find Closure month index in forecastLabels
+
+                // Check if project is closed (Closure date <= generation date)
+                let projectClosureDate = null;
+                projectData.forEach(row => {{
+                    if (row.event_type === 'Closure' && row.date) {{
+                        projectClosureDate = row.date;
+                    }}
+                }});
+                const isProjectClosed = projectClosureDate && projectClosureDate.substring(0, 10) <= generationDate;
+
+                if (isProjectClosed) {{
+                    // Closed project: only show actual data, no forecast projection
+                    forecastLabels = [...forecast.allMonths];
+                    forecastData = [...forecast.remainingBudgetData];
+                    forecastEndIndex = forecastLabels.length;
+                    n = forecastLabels.length;
+                }} else if (forecast.closureMonth && forecast.closureBudget !== null) {{
+                    // Open project with future closure: extend forecast to closure + 1 month
                     const closureIdx = forecastLabels.indexOf(forecast.closureMonth);
                     if (closureIdx >= 0) {{
-                        // For individual projects: extend forecast to closure + 1 month
                         const [closureYear, closureMonthNum] = forecast.closureMonth.split('-').map(Number);
-                        // Add 1 month after closure
                         let nextYear = closureYear;
                         let nextMonth = closureMonthNum + 1;
                         while (nextMonth > 12) {{
@@ -2034,12 +2046,10 @@ def get_html_template(event_types, date_from, date_to, data_json):
                             nextYear += 1;
                         }}
                         const nextMonthStr = `${{nextYear}}-${{String(nextMonth).padStart(2, '0')}}`;
-                        
-                        // Truncate to closure month, then add closure + 1 month
+
                         forecastData = forecastData.slice(0, closureIdx + 1);
                         forecastLabels = forecastLabels.slice(0, closureIdx + 1);
-                        
-                        // Add closure + 1 month with closure budget
+
                         forecastData.push(forecast.closureBudget);
                         forecastLabels.push(nextMonthStr);
                         forecastEndIndex = closureIdx + 2;
@@ -2647,6 +2657,9 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     projectStatusClass = 'planned';
                 }}
 
+                const isClosed = projectStatus === 'Closed';
+                const eacLabel = isClosed ? 'Final Budget' : 'EAC';
+
                 const card = $(`
                     <div class="project-card status-${{statusClass}}">
                         ${{statusIndicator}}
@@ -2661,7 +2674,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                                 <div class="project-stat-value">${{totalChargesFormatted}}</div>
                             </div>
                             <div class="project-stat cost-highlight">
-                                <div class="project-stat-label">EAC</div>
+                                <div class="project-stat-label">${{eacLabel}}</div>
                                 <div class="project-stat-value" ${{eacStyle}}>${{eacFormatted}}</div>
                             </div>
                             <div class="project-stat cost-highlight">
