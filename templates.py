@@ -6,7 +6,8 @@ HTML template for the dashboard generator.
 from datetime import datetime
 from styles import get_css
 
-VERSION = '1.0.0'
+VERSION = '1.0.1'
+
 
 
 def get_html_template(event_types, date_from, date_to, data_json):
