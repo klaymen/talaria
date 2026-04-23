@@ -6,6 +6,8 @@ HTML template for the dashboard generator.
 from datetime import datetime
 from styles import get_css
 
+VERSION = '1.0.0'
+
 
 def get_html_template(event_types, date_from, date_to, data_json):
     """Generate HTML template with embedded data."""
@@ -25,7 +27,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
     <div class="container">
         <header>
             <h1><svg class="header-icon" viewBox="0 0 476 474" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0,474) scale(0.1,-0.1)" stroke="none"><path d="M3935 4183 c-159 -63 -353 -138 -430 -168 -77 -30 -291 -113 -475 -185 -184 -73 -357 -140 -385 -150 -99 -36 -231 -92 -265 -113 -92 -55 -185 -161 -239 -272 -38 -79 -42 -95 -103 -417 -9 -49 -8 -61 6 -83 32 -49 104 -41 124 14 6 14 24 102 41 194 39 213 66 274 165 373 78 77 39 58 446 217 91 36 219 86 285 112 66 26 201 78 300 116 99 39 189 74 200 79 11 5 74 30 140 55 66 26 188 73 270 106 149 58 175 66 175 52 -1 -28 -54 -183 -75 -220 -32 -53 -101 -106 -175 -132 -30 -11 -86 -31 -125 -46 -67 -25 -187 -70 -380 -141 -49 -18 -182 -67 -295 -109 -113 -42 -272 -101 -355 -131 -82 -31 -159 -64 -169 -74 -38 -38 -10 -120 42 -120 14 0 230 78 652 235 444 165 582 215 596 215 18 0 18 -24 -1 -86 -21 -71 -70 -114 -180 -157 -49 -19 -151 -59 -225 -87 -212 -83 -455 -178 -575 -225 -60 -24 -141 -55 -180 -70 -38 -15 -76 -33 -84 -38 -39 -32 -31 -98 14 -119 20 -9 34 -9 63 1 53 19 313 120 337 131 11 5 90 36 175 69 85 33 226 87 313 121 87 34 161 60 164 57 3 -3 -3 -29 -13 -59 -12 -36 -33 -68 -68 -103 -54 -54 -51 -53 -461 -195 -60 -21 -155 -55 -211 -74 -91 -32 -129 -39 -375 -66 -151 -16 -341 -37 -422 -47 -167 -19 -152 -10 -226 -128 -95 -151 -350 -446 -610 -705 -226 -226 -275 -266 -426 -345 -136 -72 -201 -118 -221 -157 -15 -28 -14 -35 6 -92 66 -179 178 -236 370 -186 222 57 366 119 703 304 205 112 287 152 361 175 74 23 225 38 461 46 293 10 404 28 501 78 56 29 125 100 157 161 31 59 32 65 32 186 -1 112 -4 133 -29 200 -28 74 -89 198 -165 337 -63 116 -69 104 71 153 518 179 515 178 595 262 75 80 105 153 117 282 3 30 11 45 32 60 51 36 92 84 121 143 23 48 29 74 31 149 4 90 4 91 35 109 58 34 129 109 157 165 28 56 110 327 110 365 0 22 -24 62 -50 82 -31 25 -90 9 -375 -104z m-1065 -1621 c0 -4 -11 -42 -25 -85 -61 -195 -103 -430 -112 -635 l-6 -143 -45 3 -45 3 -13 64 c-43 209 -232 441 -480 587 -43 25 -81 48 -83 49 -1 2 7 22 20 44 26 47 6 42 284 72 110 11 247 26 305 34 125 15 200 18 200 7z m168 -249 c86 -166 105 -225 106 -328 1 -81 -2 -95 -26 -136 -32 -54 -83 -91 -159 -115 -71 -21 -89 -15 -89 29 0 168 81 647 110 647 4 0 30 -44 58 -97z m-995 -64 c175 -99 302 -221 385 -369 30 -54 68 -167 59 -176 -2 -2 -55 -9 -118 -15 -105 -9 -202 -23 -255 -35 -17 -4 -27 4 -47 39 -45 75 -159 188 -250 247 -48 30 -86 58 -87 62 0 3 30 42 68 85 37 43 90 106 117 141 28 34 51 62 53 62 1 0 35 -18 75 -41z m-343 -404 c36 -21 82 -52 104 -69 45 -34 146 -154 146 -172 0 -7 -48 -38 -107 -69 -147 -78 -232 -125 -268 -147 -16 -10 -34 -18 -40 -18 -5 0 -25 33 -43 74 -22 47 -51 91 -84 124 l-50 50 133 136 c73 74 136 133 139 132 3 -2 34 -20 70 -41z m-403 -369 c40 -35 97 -142 91 -172 -4 -18 -145 -83 -259 -119 -162 -51 -239 -43 -274 30 -21 46 -33 35 140 130 70 39 152 91 183 117 32 25 62 47 68 47 6 1 28 -14 51 -33z"/><path d="M3360 1610 c-30 -10 -262 -80 -515 -155 -253 -75 -471 -140 -485 -145 -14 -5 -97 -30 -185 -56 -88 -25 -212 -62 -275 -81 -63 -19 -173 -52 -245 -73 -137 -40 -337 -100 -520 -155 -60 -18 -144 -43 -185 -55 -201 -58 -219 -68 -220 -122 0 -34 32 -68 64 -68 14 0 82 17 153 39 70 21 200 60 288 86 88 26 239 71 335 100 261 79 712 213 1005 300 143 42 271 80 285 85 14 5 97 30 185 55 342 101 450 136 463 152 18 25 15 77 -6 96 -24 22 -72 20 -142 -3z"/></g></svg> Talaria - Project Tracking Dashboard</h1>
-            <span class="header-info">Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</span>
+            <span class="header-info">v{VERSION} &middot; Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</span>
         </header>
         
         <div class="toolbar-strip">
@@ -96,7 +98,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     <li><strong>Budget:</strong> Total Purchase Order coverage for the project</li>
                     <li><strong>Total Charges:</strong> Sum of all charge types (Working Time fees + Purchase expenses + T&amp;L expenses)</li>
                     <li><strong>Closure Date:</strong> Project end date (from Closure events)</li>
-                    <li><strong>EAC (Estimated At Completion):</strong> Forecasted remaining budget at closure</li>
+                    <li><strong>EAC / Final Budget:</strong> For active projects, the Estimated At Completion (forecasted remaining budget at closure). For closed projects, the actual final remaining budget.</li>
                     <li><strong>Invoices:</strong> Total invoiced amounts</li>
                     <li><strong>Missing Coverage/Overcovered:</strong> (Invoiced + Positive Financial Record) minus Total Charges</li>
                     <li><strong>Remaining Budget:</strong> Current budget status (green if positive, red if negative)</li>
@@ -113,7 +115,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 <p><strong>Red box:</strong> Forecasted budget is significantly negative (beyond 10% threshold or current budget already negative)</p>
 
                 <h3>Filters</h3>
-                <p>Use the filter section to filter data by date range, project, or event type. Quick filters are available for financial years, quarters, and months.</p>
+                <p>Use the filter section to filter data by date range, project, event type, or forecast status (Green/Yellow/Red). Quick filters are available for financial years, quarters, and months.</p>
             </div>
         </div>
 
@@ -195,6 +197,10 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 <!-- Quick Filters -->
                 <div class="quick-filters">
                     <h3>Quick Filters</h3>
+                    <div class="quick-filter-group">
+                        <label>Lifecycle:</label>
+                        <div class="quick-filter-buttons" id="lifecycleFilters"></div>
+                    </div>
                     <div class="quick-filter-group">
                         <label>Status:</label>
                         <div class="quick-filter-buttons" id="statusFilters"></div>
@@ -612,13 +618,54 @@ def get_html_template(event_types, date_from, date_to, data_json):
             return statuses;
         }}
 
-        // Cache for project statuses, keyed against the full dataset. Computed lazily.
+        // Compute lifecycle (planned/active/closed) for every project.
+        function computeProjectLifecycles(data) {{
+            const closedSet = new Set();
+            const chargesByProject = {{}};
+            const projectSet = new Set();
+
+            data.forEach(row => {{
+                const project = row.project || 'Unknown';
+                projectSet.add(project);
+                if (row.event_type === 'Closure' && row.date && row.date <= generationDate) {{
+                    closedSet.add(project);
+                }}
+                const et = row.event_type || '';
+                if (et === 'Working Time' && row.billable_amount) {{
+                    chargesByProject[project] = (chargesByProject[project] || 0) + row.billable_amount;
+                }} else if (et === 'Purchase' || et === 'T&L') {{
+                    chargesByProject[project] = (chargesByProject[project] || 0) + (row.amount || 0);
+                }}
+            }});
+
+            const lifecycles = {{}};
+            projectSet.forEach(project => {{
+                if (closedSet.has(project)) {{
+                    lifecycles[project] = 'closed';
+                }} else if (!(chargesByProject[project] > 0)) {{
+                    lifecycles[project] = 'planned';
+                }} else {{
+                    lifecycles[project] = 'active';
+                }}
+            }});
+            return lifecycles;
+        }}
+
+        // Caches computed lazily once against allData.
         let projectStatusesCache = null;
         function getProjectStatuses() {{
             if (projectStatusesCache === null) {{
                 projectStatusesCache = computeProjectStatuses(allData);
             }}
             return projectStatusesCache;
+        }}
+
+        let projectLifecyclesCache = null;
+        function getProjectLifecycles() {{
+            if (projectLifecyclesCache === null) {{
+                projectLifecyclesCache = computeProjectLifecycles(allData);
+            }}
+            return projectLifecyclesCache;
         }}
 
         function applyFilters() {{
@@ -631,6 +678,11 @@ def get_html_template(event_types, date_from, date_to, data_json):
             const status = selectedStatusBtn.length > 0 ? selectedStatusBtn.data('status') : 'all';
             const projectStatuses = status !== 'all' ? getProjectStatuses() : null;
 
+            // Get selected lifecycle from quick filter buttons
+            const selectedLifecycleBtn = $('.quick-filter-btn[data-lifecycle].active');
+            const lifecycle = selectedLifecycleBtn.length > 0 ? selectedLifecycleBtn.data('lifecycle') : 'all';
+            const projectLifecycles = lifecycle !== 'all' ? getProjectLifecycles() : null;
+
             const eventType = $('#eventTypeFilter').val();
             const dateFrom = $('#dateFrom').val();
             const dateTo = $('#dateTo').val();
@@ -638,6 +690,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             filteredData = allData.filter(row => {{
                 if (project !== 'all' && row.project !== project) return false;
                 if (status !== 'all' && projectStatuses[row.project || 'Unknown'] !== status) return false;
+                if (lifecycle !== 'all' && projectLifecycles[row.project || 'Unknown'] !== lifecycle) return false;
                 if (eventType !== 'all' && row.event_type !== eventType) return false;
                 if (dateFrom && row.date < dateFrom) return false;
                 if (dateTo && row.date > dateTo) return false;
@@ -673,6 +726,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             $('.quick-filter-btn').removeClass('active');
             $('.quick-filter-btn[data-project="all"]').addClass('active');
             $('.quick-filter-btn[data-status="all"]').addClass('active');
+            $('.quick-filter-btn[data-lifecycle="all"]').addClass('active');
             filteredData = [...allData];
             // Get selected project from quick filter buttons
             const selectedProjectBtn = $('.quick-filter-btn[data-project].active');
@@ -686,6 +740,33 @@ def get_html_template(event_types, date_from, date_to, data_json):
         }}
         
         function initializeQuickFilters() {{
+            // Generate lifecycle quick filters (Planned/Active/Closed)
+            const lifecycleFilters = $('#lifecycleFilters');
+            lifecycleFilters.empty();
+
+            const allLifecycleBtn = $('<button class="quick-filter-btn active" data-lifecycle="all">All</button>');
+            allLifecycleBtn.on('click', function() {{
+                $('.quick-filter-btn[data-lifecycle]').removeClass('active');
+                $(this).addClass('active');
+                applyFilters();
+            }});
+            lifecycleFilters.append(allLifecycleBtn);
+
+            const lifecycleLabels = [
+                {{key: 'planned', label: 'Planned'}},
+                {{key: 'active', label: 'Active'}},
+                {{key: 'closed', label: 'Closed'}}
+            ];
+            lifecycleLabels.forEach(lc => {{
+                const btn = $(`<button class="quick-filter-btn lifecycle-${{lc.key}}" data-lifecycle="${{lc.key}}">${{lc.label}}</button>`);
+                btn.on('click', function() {{
+                    $('.quick-filter-btn[data-lifecycle]').removeClass('active');
+                    $(this).addClass('active');
+                    applyFilters();
+                }});
+                lifecycleFilters.append(btn);
+            }});
+
             // Generate status quick filters (Green/Yellow/Red)
             const statusFilters = $('#statusFilters');
             statusFilters.empty();
@@ -1990,43 +2071,55 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     return;
                 }}
                 $('#forecastChartPlaceholder').removeClass('show');
-                
+
                 allMonths = forecast.allMonths;
                 remainingBudgetData = forecast.remainingBudgetData;
                 forecastData = forecast.forecastData;
                 forecastLabels = forecast.forecastLabels;
                 forecastEndIndex = forecast.forecastEndIndex;
                 n = forecast.n;
-                
+
                 // Find months that have charge events for individual project
                 monthsWithCharges = new Set();
                 projectData.forEach(row => {{
                     const eventType = row.event_type || '';
                     const date = row.date || '';
-                    
+
                     // Check if this is a charge event (not PO, Invoice, or Closure)
                     if (date && date.length >= 7) {{
                         const month = date.substring(0, 7);
-                        if (eventType === 'Working Time' || eventType === 'Purchase' || 
+                        if (eventType === 'Working Time' || eventType === 'Purchase' ||
                             eventType === 'T&L' || eventType === 'Deferment') {{
                             monthsWithCharges.add(month);
                         }}
                     }}
                 }});
-                
+
                 // Find last actual month for individual project
                 if (forecast.allMonths.length > 0) {{
                     lastActualMonth = forecast.allMonths[forecast.allMonths.length - 1];
                 }}
-                
-                // If Closure exists, for individual projects: extend forecast to closure + 1 month
-                if (forecast.closureMonth && forecast.closureBudget !== null) {{
-                    // Find Closure month index in forecastLabels
+
+                // Check if project is closed (Closure date <= generation date)
+                let projectClosureDate = null;
+                projectData.forEach(row => {{
+                    if (row.event_type === 'Closure' && row.date) {{
+                        projectClosureDate = row.date;
+                    }}
+                }});
+                const isProjectClosed = projectClosureDate && projectClosureDate.substring(0, 10) <= generationDate;
+
+                if (isProjectClosed) {{
+                    // Closed project: only show actual data, no forecast projection
+                    forecastLabels = [...forecast.allMonths];
+                    forecastData = [...forecast.remainingBudgetData];
+                    forecastEndIndex = forecastLabels.length;
+                    n = forecastLabels.length;
+                }} else if (forecast.closureMonth && forecast.closureBudget !== null) {{
+                    // Open project with future closure: extend forecast to closure + 1 month
                     const closureIdx = forecastLabels.indexOf(forecast.closureMonth);
                     if (closureIdx >= 0) {{
-                        // For individual projects: extend forecast to closure + 1 month
                         const [closureYear, closureMonthNum] = forecast.closureMonth.split('-').map(Number);
-                        // Add 1 month after closure
                         let nextYear = closureYear;
                         let nextMonth = closureMonthNum + 1;
                         while (nextMonth > 12) {{
@@ -2034,12 +2127,10 @@ def get_html_template(event_types, date_from, date_to, data_json):
                             nextYear += 1;
                         }}
                         const nextMonthStr = `${{nextYear}}-${{String(nextMonth).padStart(2, '0')}}`;
-                        
-                        // Truncate to closure month, then add closure + 1 month
+
                         forecastData = forecastData.slice(0, closureIdx + 1);
                         forecastLabels = forecastLabels.slice(0, closureIdx + 1);
-                        
-                        // Add closure + 1 month with closure budget
+
                         forecastData.push(forecast.closureBudget);
                         forecastLabels.push(nextMonthStr);
                         forecastEndIndex = closureIdx + 2;
@@ -2647,6 +2738,9 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     projectStatusClass = 'planned';
                 }}
 
+                const isClosed = projectStatus === 'Closed';
+                const eacLabel = isClosed ? 'Final Budget' : 'EAC';
+
                 const card = $(`
                     <div class="project-card status-${{statusClass}}">
                         ${{statusIndicator}}
@@ -2661,7 +2755,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                                 <div class="project-stat-value">${{totalChargesFormatted}}</div>
                             </div>
                             <div class="project-stat cost-highlight">
-                                <div class="project-stat-label">EAC</div>
+                                <div class="project-stat-label">${{eacLabel}}</div>
                                 <div class="project-stat-value" ${{eacStyle}}>${{eacFormatted}}</div>
                             </div>
                             <div class="project-stat cost-highlight">
