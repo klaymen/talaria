@@ -196,6 +196,10 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 <div class="quick-filters">
                     <h3>Quick Filters</h3>
                     <div class="quick-filter-group">
+                        <label>Lifecycle:</label>
+                        <div class="quick-filter-buttons" id="lifecycleFilters"></div>
+                    </div>
+                    <div class="quick-filter-group">
                         <label>Status:</label>
                         <div class="quick-filter-buttons" id="statusFilters"></div>
                     </div>
@@ -612,13 +616,54 @@ def get_html_template(event_types, date_from, date_to, data_json):
             return statuses;
         }}
 
-        // Cache for project statuses, keyed against the full dataset. Computed lazily.
+        // Compute lifecycle (planned/active/closed) for every project.
+        function computeProjectLifecycles(data) {{
+            const closedSet = new Set();
+            const chargesByProject = {{}};
+            const projectSet = new Set();
+
+            data.forEach(row => {{
+                const project = row.project || 'Unknown';
+                projectSet.add(project);
+                if (row.event_type === 'Closure' && row.date && row.date <= generationDate) {{
+                    closedSet.add(project);
+                }}
+                const et = row.event_type || '';
+                if (et === 'Working Time' && row.billable_amount) {{
+                    chargesByProject[project] = (chargesByProject[project] || 0) + row.billable_amount;
+                }} else if (et === 'Purchase' || et === 'T&L') {{
+                    chargesByProject[project] = (chargesByProject[project] || 0) + (row.amount || 0);
+                }}
+            }});
+
+            const lifecycles = {{}};
+            projectSet.forEach(project => {{
+                if (closedSet.has(project)) {{
+                    lifecycles[project] = 'closed';
+                }} else if (!(chargesByProject[project] > 0)) {{
+                    lifecycles[project] = 'planned';
+                }} else {{
+                    lifecycles[project] = 'active';
+                }}
+            }});
+            return lifecycles;
+        }}
+
+        // Caches computed lazily once against allData.
         let projectStatusesCache = null;
         function getProjectStatuses() {{
             if (projectStatusesCache === null) {{
                 projectStatusesCache = computeProjectStatuses(allData);
             }}
             return projectStatusesCache;
+        }}
+
+        let projectLifecyclesCache = null;
+        function getProjectLifecycles() {{
+            if (projectLifecyclesCache === null) {{
+                projectLifecyclesCache = computeProjectLifecycles(allData);
+            }}
+            return projectLifecyclesCache;
         }}
 
         function applyFilters() {{
@@ -631,6 +676,11 @@ def get_html_template(event_types, date_from, date_to, data_json):
             const status = selectedStatusBtn.length > 0 ? selectedStatusBtn.data('status') : 'all';
             const projectStatuses = status !== 'all' ? getProjectStatuses() : null;
 
+            // Get selected lifecycle from quick filter buttons
+            const selectedLifecycleBtn = $('.quick-filter-btn[data-lifecycle].active');
+            const lifecycle = selectedLifecycleBtn.length > 0 ? selectedLifecycleBtn.data('lifecycle') : 'all';
+            const projectLifecycles = lifecycle !== 'all' ? getProjectLifecycles() : null;
+
             const eventType = $('#eventTypeFilter').val();
             const dateFrom = $('#dateFrom').val();
             const dateTo = $('#dateTo').val();
@@ -638,6 +688,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             filteredData = allData.filter(row => {{
                 if (project !== 'all' && row.project !== project) return false;
                 if (status !== 'all' && projectStatuses[row.project || 'Unknown'] !== status) return false;
+                if (lifecycle !== 'all' && projectLifecycles[row.project || 'Unknown'] !== lifecycle) return false;
                 if (eventType !== 'all' && row.event_type !== eventType) return false;
                 if (dateFrom && row.date < dateFrom) return false;
                 if (dateTo && row.date > dateTo) return false;
@@ -673,6 +724,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             $('.quick-filter-btn').removeClass('active');
             $('.quick-filter-btn[data-project="all"]').addClass('active');
             $('.quick-filter-btn[data-status="all"]').addClass('active');
+            $('.quick-filter-btn[data-lifecycle="all"]').addClass('active');
             filteredData = [...allData];
             // Get selected project from quick filter buttons
             const selectedProjectBtn = $('.quick-filter-btn[data-project].active');
@@ -686,6 +738,33 @@ def get_html_template(event_types, date_from, date_to, data_json):
         }}
         
         function initializeQuickFilters() {{
+            // Generate lifecycle quick filters (Planned/Active/Closed)
+            const lifecycleFilters = $('#lifecycleFilters');
+            lifecycleFilters.empty();
+
+            const allLifecycleBtn = $('<button class="quick-filter-btn active" data-lifecycle="all">All</button>');
+            allLifecycleBtn.on('click', function() {{
+                $('.quick-filter-btn[data-lifecycle]').removeClass('active');
+                $(this).addClass('active');
+                applyFilters();
+            }});
+            lifecycleFilters.append(allLifecycleBtn);
+
+            const lifecycleLabels = [
+                {{key: 'planned', label: 'Planned'}},
+                {{key: 'active', label: 'Active'}},
+                {{key: 'closed', label: 'Closed'}}
+            ];
+            lifecycleLabels.forEach(lc => {{
+                const btn = $(`<button class="quick-filter-btn lifecycle-${{lc.key}}" data-lifecycle="${{lc.key}}">${{lc.label}}</button>`);
+                btn.on('click', function() {{
+                    $('.quick-filter-btn[data-lifecycle]').removeClass('active');
+                    $(this).addClass('active');
+                    applyFilters();
+                }});
+                lifecycleFilters.append(btn);
+            }});
+
             // Generate status quick filters (Green/Yellow/Red)
             const statusFilters = $('#statusFilters');
             statusFilters.empty();

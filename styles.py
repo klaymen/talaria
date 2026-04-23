@@ -564,6 +564,40 @@ def get_css():
         background: white;
         }
 
+        /* Lifecycle filter dots */
+        .quick-filter-btn.lifecycle-planned::before,
+        .quick-filter-btn.lifecycle-active::before,
+        .quick-filter-btn.lifecycle-closed::before {
+        content: '';
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+        vertical-align: middle;
+        }
+        .quick-filter-btn.lifecycle-planned::before { background: var(--color-primary); }
+        .quick-filter-btn.lifecycle-active::before { background: var(--color-positive); }
+        .quick-filter-btn.lifecycle-closed::before { background: var(--color-text-muted); }
+
+        .quick-filter-btn.lifecycle-planned.active {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        }
+        .quick-filter-btn.lifecycle-active.active {
+        background: var(--color-positive);
+        border-color: var(--color-positive);
+        }
+        .quick-filter-btn.lifecycle-closed.active {
+        background: var(--color-text-muted);
+        border-color: var(--color-text-muted);
+        }
+        .quick-filter-btn.lifecycle-planned.active::before,
+        .quick-filter-btn.lifecycle-active.active::before,
+        .quick-filter-btn.lifecycle-closed.active::before {
+        background: white;
+        }
+
         .charts-section {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
