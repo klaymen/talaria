@@ -600,14 +600,18 @@ def get_css():
 
         .charts-section {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        grid-template-columns: 1fr 1fr;
         gap: 20px;
         margin-bottom: 30px;
         }
 
+        .chart-container:first-child {
+        grid-column: 1 / -1;
+        }
+
         @media (max-width: 1200px) {
         .charts-section {
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        grid-template-columns: 1fr;
         }
         }
 
