@@ -6,7 +6,7 @@ HTML template for the dashboard generator.
 from datetime import datetime
 from styles import get_css
 
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 
 
 
@@ -1085,7 +1085,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             // Remaining budget = PO Coverage - Total Charges (invoices are informational only)
             const remainingBudget = poCoverage - totalCharges;
             // Coverage gap = (Invoiced + Positive Financial Record) - Total Charges
-            // Negative = missing coverage, Positive = overcovered
+            // Negative = underinvoiced, Positive = overinvoiced
             const coverageGap = (invoices + positiveFinancialRecord) - totalCharges;
 
             // Calculate Invoiced/Charges ratio as percentage
@@ -2649,7 +2649,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 const totalChargesFormatted = formatEUR(totalCharges);
                 const invoicesFormatted = formatEUR(stats.invoices);
                 // Coverage gap = (Invoiced + Positive Financial Record) - Total Charges
-                // Negative = missing coverage, Positive = overcovered
+                // Negative = underinvoiced, Positive = overinvoiced
                 const coverageGap = (stats.invoices + stats.positiveFinancialRecord) - totalCharges;
 
                 // Determine Invoice Balance label and display value
