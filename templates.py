@@ -6,7 +6,7 @@ HTML template for the dashboard generator.
 from datetime import datetime
 from styles import get_css
 
-VERSION = '1.0.4'
+VERSION = '1.0.5'
 
 
 
@@ -886,6 +886,16 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     }}
                 }}
                 
+                // Add "All" button to reset date range
+                const allFinancialBtn = $('<button class="quick-filter-btn" data-start="all">All</button>');
+                allFinancialBtn.on('click', function() {{
+                    $('#financialFilters .quick-filter-btn, #monthFilters .quick-filter-btn').removeClass('active');
+                    $('#dateFrom').val(dates[0]);
+                    $('#dateTo').val(dates[dates.length - 1]);
+                    applyFilters();
+                }});
+                financialFilters.append(allFinancialBtn);
+
                 // Add financial year buttons
                 financialYears.forEach(fy => {{
                     const btn = $(`<button class="quick-filter-btn" data-start="${{fy.start}}" data-end="${{fy.end}}">${{fy.label}}</button>`);
@@ -990,7 +1000,17 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 }});
                 
                 const sortedMonths = Array.from(monthSet).sort();
-                
+
+                // Add "All" button to reset date range
+                const allMonthsBtn = $('<button class="quick-filter-btn" data-start="all">All</button>');
+                allMonthsBtn.on('click', function() {{
+                    $('#financialFilters .quick-filter-btn, #monthFilters .quick-filter-btn').removeClass('active');
+                    $('#dateFrom').val(dates[0]);
+                    $('#dateTo').val(dates[dates.length - 1]);
+                    applyFilters();
+                }});
+                monthFilters.append(allMonthsBtn);
+
                 sortedMonths.forEach(monthStr => {{
                     const [year, month] = monthStr.split('-').map(Number);
                     const date = new Date(year, month - 1, 1);
