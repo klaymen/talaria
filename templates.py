@@ -6,7 +6,7 @@ HTML template for the dashboard generator.
 from datetime import datetime
 from styles import get_css
 
-VERSION = '1.0.5'
+VERSION = '1.0.6'
 
 
 
@@ -229,6 +229,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             <summary><h2>Charts</h2></summary>
             <div class="charts-section">
                 <div class="chart-container">
+                    <button class="chart-save-btn" data-chart="projectAmountChart" title="Save as PNG" style="display:none;">&#11015;</button>
                     <h3>Budget by Project</h3>
                     <div class="chart-filters" id="projectAmountChartFilters" style="display: none;">
                         <div class="chart-filter-buttons">
@@ -248,21 +249,25 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     <div class="chart-placeholder" id="projectAmountChartPlaceholder">No data available for this chart</div>
                 </div>
                 <div class="chart-container">
+                    <button class="chart-save-btn" data-chart="projectHoursChart" title="Save as PNG" style="display:none;">&#11015;</button>
                     <h3>Hours by Project</h3>
                     <canvas id="projectHoursChart"></canvas>
                     <div class="chart-placeholder" id="projectHoursChartPlaceholder">No data available for this chart</div>
                 </div>
                 <div class="chart-container">
+                    <button class="chart-save-btn" data-chart="monthlyHoursChart" title="Save as PNG" style="display:none;">&#11015;</button>
                     <h3>Hours by Month</h3>
                     <canvas id="monthlyHoursChart"></canvas>
                     <div class="chart-placeholder" id="monthlyHoursChartPlaceholder">No data available for this chart</div>
                 </div>
                 <div class="chart-container">
+                    <button class="chart-save-btn" data-chart="timelineChart" title="Save as PNG" style="display:none;">&#11015;</button>
                     <h3>Timeline</h3>
                     <canvas id="timelineChart"></canvas>
                     <div class="chart-placeholder" id="timelineChartPlaceholder">No data available for this chart</div>
                 </div>
                 <div class="chart-container">
+                    <button class="chart-save-btn" data-chart="forecastChart" title="Save as PNG" style="display:none;">&#11015;</button>
                     <h3>Budget Forecast</h3>
                     <canvas id="forecastChart"></canvas>
                     <div class="chart-placeholder" id="forecastChartPlaceholder">No data available for this chart</div>
@@ -460,6 +465,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             renderMonthlySummary(allData, 'all');
             updateSummary(allData);
             renderForecastChart(allData);
+            updateChartSaveButtons();
             // Filter handlers
             $('#eventTypeFilter, #dateFrom, #dateTo').on('change', applyFilters);
             $('#clearFilters').on('click', clearFilters);
@@ -707,8 +713,9 @@ def get_html_template(event_types, date_from, date_to, data_json):
             renderMonthlySummary(filteredData, projectFilter);
             updateSummary(filteredData);
             renderForecastChart(allData);
+            updateChartSaveButtons();
         }}
-        
+
         function clearFilters() {{
             $('#eventTypeFilter').val('all');
             // Reset to first and last event dates
@@ -740,8 +747,9 @@ def get_html_template(event_types, date_from, date_to, data_json):
             renderMonthlySummary(filteredData, projectFilter);
             updateSummary(filteredData);
             renderForecastChart(allData);
+            updateChartSaveButtons();
         }}
-        
+
         function initializeQuickFilters() {{
             // Generate lifecycle quick filters (Planned/Active/Closed)
             const lifecycleFilters = $('#lifecycleFilters');
@@ -1036,6 +1044,57 @@ def get_html_template(event_types, date_from, date_to, data_json):
             }}
         }}
         
+        function saveChartAsImage(chartId) {{
+            const chartInstance = Chart.getChart(chartId);
+            if (!chartInstance) return;
+
+            const scale = 3;
+            const origCanvas = chartInstance.canvas;
+            const hiRes = document.createElement('canvas');
+            hiRes.width = origCanvas.width * scale;
+            hiRes.height = origCanvas.height * scale;
+            const ctx = hiRes.getContext('2d');
+            ctx.scale(scale, scale);
+
+            // Draw white background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, origCanvas.width, origCanvas.height);
+
+            // Temporarily disable animations and redraw at high res
+            const origResponsive = chartInstance.options.responsive;
+            const origAnimation = chartInstance.options.animation;
+            chartInstance.options.responsive = false;
+            chartInstance.options.animation = false;
+            chartInstance.resize(origCanvas.width, origCanvas.height);
+            chartInstance.draw();
+            ctx.drawImage(origCanvas, 0, 0);
+
+            // Restore
+            chartInstance.options.responsive = origResponsive;
+            chartInstance.options.animation = origAnimation;
+            chartInstance.resize();
+
+            const link = document.createElement('a');
+            const title = $(`#${{chartId}}`).closest('.chart-container').find('h3').text().replace(/[^a-zA-Z0-9]/g, '_');
+            link.download = `${{title}}.png`;
+            link.href = hiRes.toDataURL('image/png');
+            link.click();
+        }}
+
+        function updateChartSaveButtons() {{
+            $('.chart-save-btn').each(function() {{
+                const chartId = $(this).data('chart');
+                const chart = Chart.getChart(chartId);
+                const placeholder = $(`#${{chartId}}Placeholder`);
+                const hasData = chart && chart.data && chart.data.labels && chart.data.labels.length > 0 && !placeholder.hasClass('show');
+                $(this).css('display', hasData ? 'flex' : 'none');
+            }});
+        }}
+
+        $(document).on('click', '.chart-save-btn', function() {{
+            saveChartAsImage($(this).data('chart'));
+        }});
+
         // Helper function to format EUR amounts: remove decimals for values >= 100
         function formatEUR(value) {{
             if (value === null || value === undefined || value === '') return '';
