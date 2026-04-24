@@ -16,7 +16,7 @@ A Python tool that reads Excel files containing project tracking data and genera
   - Remaining budget calculation per project
 - **Comments**: Supports both a dedicated Comment column and cell-level Excel comments (sticky notes)
 - **Charts**: Budget by Project, Hours by Project, Hours by Month, Timeline, Budget Forecast
-- **Filtering**: Quick filters for projects, financial years, quarters, months; event type and date range filters
+- **Filtering**: Quick filters for projects, financial years, quarters, months; lifecycle (Planned/Active/Closed) and status (Green/Yellow/Red) filters; event type and date range filters
 - **Data Table**: Sortable columns, pagination, full-text search, sheet filter, CSV export
 - **Project Details**: Per-project financial breakdown with status indicators (green/yellow/red)
 - **Dark Mode**: Automatic (follows OS preference) or manual toggle
@@ -124,7 +124,7 @@ Cell-level Excel comments (sticky notes) are also read and merged with Comment c
 | **Budget** | Total PO coverage (adjusted by Deferment and negative Financial Records) |
 | **Total Charges** | Working Time fees + Purchase expenses + T&L expenses |
 | **Total Invoices** | Invoice amounts + positive Deferment |
-| **Missing Coverage / Overcovered** | (Invoiced + Positive Financial Record) − Total Charges |
+| **Invoice Balance** | (Invoiced + Positive Financial Record) − Total Charges. Negative = Underinvoiced, Positive = Overinvoiced |
 | **Remaining Budget** | Budget − Total Charges |
 | **Total Hours** | Sum of all hours |
 
