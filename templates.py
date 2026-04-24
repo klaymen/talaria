@@ -6,7 +6,7 @@ HTML template for the dashboard generator.
 from datetime import datetime
 from styles import get_css
 
-VERSION = '1.0.6'
+VERSION = '1.0.7'
 
 
 
@@ -1050,28 +1050,29 @@ def get_html_template(event_types, date_from, date_to, data_json):
 
             const scale = 3;
             const origCanvas = chartInstance.canvas;
+            const cssWidth = origCanvas.clientWidth || origCanvas.offsetWidth;
+            const cssHeight = origCanvas.clientHeight || origCanvas.offsetHeight;
+
             const hiRes = document.createElement('canvas');
-            hiRes.width = origCanvas.width * scale;
-            hiRes.height = origCanvas.height * scale;
+            hiRes.width = cssWidth * scale;
+            hiRes.height = cssHeight * scale;
             const ctx = hiRes.getContext('2d');
-            ctx.scale(scale, scale);
 
-            // Draw white background
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, origCanvas.width, origCanvas.height);
+            ctx.fillRect(0, 0, hiRes.width, hiRes.height);
 
-            // Temporarily disable animations and redraw at high res
-            const origResponsive = chartInstance.options.responsive;
-            const origAnimation = chartInstance.options.animation;
-            chartInstance.options.responsive = false;
+            // Temporarily resize chart to high-res dimensions
+            const savedRatio = chartInstance.options.devicePixelRatio;
+            chartInstance.options.devicePixelRatio = scale;
             chartInstance.options.animation = false;
-            chartInstance.resize(origCanvas.width, origCanvas.height);
+            chartInstance.resize(cssWidth, cssHeight);
             chartInstance.draw();
-            ctx.drawImage(origCanvas, 0, 0);
 
-            // Restore
-            chartInstance.options.responsive = origResponsive;
-            chartInstance.options.animation = origAnimation;
+            ctx.drawImage(chartInstance.canvas, 0, 0, hiRes.width, hiRes.height);
+
+            // Restore original settings
+            chartInstance.options.devicePixelRatio = savedRatio;
+            chartInstance.options.animation = undefined;
             chartInstance.resize();
 
             const link = document.createElement('a');
