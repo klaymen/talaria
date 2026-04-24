@@ -6,7 +6,7 @@ HTML template for the dashboard generator.
 from datetime import datetime
 from styles import get_css
 
-VERSION = '1.0.7'
+VERSION = '1.0.8'
 
 
 
@@ -1058,7 +1058,8 @@ def get_html_template(event_types, date_from, date_to, data_json):
             hiRes.height = cssHeight * scale;
             const ctx = hiRes.getContext('2d');
 
-            ctx.fillStyle = '#ffffff';
+            const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--color-surface').trim() || '#ffffff';
+            ctx.fillStyle = bgColor;
             ctx.fillRect(0, 0, hiRes.width, hiRes.height);
 
             // Temporarily resize chart to high-res dimensions
