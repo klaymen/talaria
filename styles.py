@@ -622,6 +622,36 @@ def get_css():
         box-sizing: border-box;
         }
 
+        .chart-save-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 30px;
+        height: 30px;
+        background: var(--color-surface-alt);
+        color: var(--color-text-muted);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+        transition: all 0.2s;
+        opacity: 0;
+        }
+
+        .chart-container:hover .chart-save-btn {
+        opacity: 1;
+        }
+
+        .chart-save-btn:hover {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+        }
+
         .chart-container h3 {
         margin-bottom: 20px;
         color: var(--color-text);
