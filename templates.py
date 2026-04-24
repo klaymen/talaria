@@ -6,7 +6,7 @@ HTML template for the dashboard generator.
 from datetime import datetime
 from styles import get_css
 
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 
 
 
@@ -58,7 +58,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     <li><strong>Working Time:</strong> A fee. Calculated as hours &times; billing rate &times; (1 + surcharge rate). The billable amount is shown instead of the Amount field.</li>
                     <li><strong>Purchase:</strong> A direct expense (e.g. software licenses, hardware).</li>
                     <li><strong>T&amp;L:</strong> Travel &amp; Logistics expenses.</li>
-                    <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a charge, not added to the budget. Used for the Missing Coverage / Overcovered calculation.</li>
+                    <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a charge, not added to the budget. Used for the Invoice Balance calculation.</li>
                     <li><strong>Deferment:</strong> Positive deferment adds to the budget and counts as invoiced. Negative deferment reduces the budget. Not included in charges.</li>
                     <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage calculation (Charges&nbsp;/&nbsp;(Invoiced&nbsp;+&nbsp;Positive&nbsp;Financial&nbsp;Record)) but are <em>not</em> counted as invoiced. Negative amounts reduce the budget. Not included in charges.</li>
                     <li><strong>Closure:</strong> Marks the project end date. The budget forecast extends to the closure month.</li>
@@ -71,7 +71,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 <p><strong>Budget:</strong> Total Purchase Order coverage across all projects (includes positive Deferment and is reduced by negative Deferment and negative Financial Records).</p>
                 <p><strong>Total Charges:</strong> Sum of Working Time fees + Purchase expenses + T&amp;L expenses. Deferment and Financial Record are not charges.</p>
                 <p><strong>Total Invoices:</strong> Total invoiced amounts (includes Invoice events and positive Deferment). Positive Financial Records are <em>not</em> counted as invoiced.</p>
-                <p><strong>Missing Coverage/Overcovered:</strong> (Invoiced + Positive Financial Record) minus Total Charges. Negative (red) = missing coverage; positive = overcovered.</p>
+                <p><strong>Invoice Balance:</strong> (Invoiced + Positive Financial Record) minus Total Charges. Negative (red) = underinvoiced; positive = overinvoiced.</p>
                 <p><strong>Remaining Budget:</strong> Budget minus Total Charges.</p>
                 <p><strong>Coverage:</strong> Shown next to each project name. Calculated as <em>Total Charges / (Invoiced + Positive Financial Record)</em>. This ratio indicates how much of the invoiced-or-planned amount has actually been charged. Positive Financial Records represent amounts that are expected to be invoiced in the future, so they widen the denominator without affecting charges or the invoice totals.</p>
 
@@ -101,7 +101,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     <li><strong>Closure Date:</strong> Project end date (from Closure events)</li>
                     <li><strong>EAC / Final Budget:</strong> For active projects, the Estimated At Completion (forecasted remaining budget at closure). For closed projects, the actual final remaining budget.</li>
                     <li><strong>Invoices:</strong> Total invoiced amounts</li>
-                    <li><strong>Missing Coverage/Overcovered:</strong> (Invoiced + Positive Financial Record) minus Total Charges</li>
+                    <li><strong>Invoice Balance:</strong> (Invoiced + Positive Financial Record) minus Total Charges</li>
                     <li><strong>Remaining Budget:</strong> Current budget status (green if positive, red if negative)</li>
                     <li><strong>Working Time Fees / Purchase Expenses / T&amp;L Expenses:</strong> Breakdown by charge type</li>
                     <li><strong>Deferment:</strong> Positive adds to the budget and counts as invoiced. Negative reduces the budget. Not a charge.</li>
@@ -159,8 +159,8 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 <div class="summary-value" id="totalInvoices">-</div>
             </div>
             <div class="summary-card">
-                <h3 id="missingInvoiceLabel">Missing Coverage/Overcovered</h3>
-                <div class="summary-value" id="missingInvoice">-</div>
+                <h3 id="invoiceBalanceLabel">Invoice Balance</h3>
+                <div class="summary-value" id="invoiceBalance">-</div>
             </div>
             <div class="summary-card">
                 <h3>Remaining Budget</h3>
@@ -1129,25 +1129,22 @@ def get_html_template(event_types, date_from, date_to, data_json):
             $('#totalPOCoverage').text(formatEUR(poCoverage));
             $('#totalCharges').text(formatEUR(totalCharges));
             $('#totalInvoices').text(formatEUR(invoices));
-            // Update Missing Coverage/Overcovered display
-            const coverageGapElement = $('#missingInvoice');
-            const coverageGapLabelElement = $('#missingInvoiceLabel');
+            // Update Invoice Balance display
+            const invoiceBalanceElement = $('#invoiceBalance');
+            const invoiceBalanceLabelElement = $('#invoiceBalanceLabel');
 
             if (Math.abs(coverageGap) < 0.01) {{
-                // Zero or very close to zero - show checkmark
-                coverageGapLabelElement.text('Balanced');
-                coverageGapElement.text('✓');
-                coverageGapElement.css('color', 'var(--color-positive)');
+                invoiceBalanceLabelElement.text('Balanced');
+                invoiceBalanceElement.text('✓');
+                invoiceBalanceElement.css('color', 'var(--color-positive)');
             }} else if (coverageGap < 0) {{
-                // Negative - missing coverage
-                coverageGapLabelElement.text('Missing Coverage');
-                coverageGapElement.text(formatEUR(coverageGap));
-                coverageGapElement.css('color', 'var(--color-negative)');
+                invoiceBalanceLabelElement.text('Underinvoiced');
+                invoiceBalanceElement.text(formatEUR(coverageGap));
+                invoiceBalanceElement.css('color', 'var(--color-negative)');
             }} else {{
-                // Positive - overcovered
-                coverageGapLabelElement.text('Overcovered');
-                coverageGapElement.text(formatEUR(coverageGap));
-                coverageGapElement.css('color', '');
+                invoiceBalanceLabelElement.text('Overinvoiced');
+                invoiceBalanceElement.text(formatEUR(coverageGap));
+                invoiceBalanceElement.css('color', '');
             }}
             $('#remainingBudget').text(formatEUR(remainingBudget));
             $('#totalHours').text(totalHours.toLocaleString('en-US', {{minimumFractionDigits: 0, maximumFractionDigits: 0}}));
@@ -2655,29 +2652,26 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 // Negative = missing coverage, Positive = overcovered
                 const coverageGap = (stats.invoices + stats.positiveFinancialRecord) - totalCharges;
 
-                // Determine label and display value
-                let missingInvoiceLabel = 'Missing Coverage/Overcovered';
-                let missingInvoiceDisplay = '';
-                let missingInvoiceColor = '';
+                // Determine Invoice Balance label and display value
+                let invoiceBalanceLabel = 'Invoice Balance';
+                let invoiceBalanceDisplay = '';
+                let invoiceBalanceColor = '';
 
                 if (Math.abs(coverageGap) < 0.01) {{
-                    // Zero or very close to zero - show checkmark
-                    missingInvoiceLabel = 'Balanced';
-                    missingInvoiceDisplay = '✓';
-                    missingInvoiceColor = 'var(--color-positive)';
+                    invoiceBalanceLabel = 'Balanced';
+                    invoiceBalanceDisplay = '✓';
+                    invoiceBalanceColor = 'var(--color-positive)';
                 }} else if (coverageGap < 0) {{
-                    // Negative - missing coverage
-                    missingInvoiceLabel = 'Missing Coverage';
-                    missingInvoiceDisplay = formatEUR(coverageGap);
-                    missingInvoiceColor = 'var(--color-negative)';
+                    invoiceBalanceLabel = 'Underinvoiced';
+                    invoiceBalanceDisplay = formatEUR(coverageGap);
+                    invoiceBalanceColor = 'var(--color-negative)';
                 }} else {{
-                    // Positive - overcovered
-                    missingInvoiceLabel = 'Overcovered';
-                    missingInvoiceDisplay = formatEUR(coverageGap);
-                    missingInvoiceColor = '';
+                    invoiceBalanceLabel = 'Overinvoiced';
+                    invoiceBalanceDisplay = formatEUR(coverageGap);
+                    invoiceBalanceColor = '';
                 }}
-                
-                const missingInvoiceStyle = missingInvoiceColor ? `style="color: ${{missingInvoiceColor}}"` : '';
+
+                const invoiceBalanceStyle = invoiceBalanceColor ? `style="color: ${{invoiceBalanceColor}}"` : '';
                 const remainingBudgetFormatted = formatEUR(remainingBudget);
                 const workingTimeFeesFormatted = formatEUR(stats.workingTimeFees);
                 const purchaseExpensesFormatted = formatEUR(stats.purchaseExpenses);
@@ -2772,8 +2766,8 @@ def get_html_template(event_types, date_from, date_to, data_json):
                                 <div class="project-stat-value">${{invoicesFormatted}}</div>
                             </div>
                             <div class="project-stat">
-                                <div class="project-stat-label">${{missingInvoiceLabel}}</div>
-                                <div class="project-stat-value" ${{missingInvoiceStyle}}>${{missingInvoiceDisplay}}</div>
+                                <div class="project-stat-label">${{invoiceBalanceLabel}}</div>
+                                <div class="project-stat-value" ${{invoiceBalanceStyle}}>${{invoiceBalanceDisplay}}</div>
                             </div>
                             <div class="project-stat">
                                 <div class="project-stat-label">Remaining Budget</div>
