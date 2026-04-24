@@ -6,7 +6,7 @@ HTML template for the dashboard generator.
 from datetime import datetime
 from styles import get_css
 
-VERSION = '1.0.3'
+VERSION = '1.0.4'
 
 
 
@@ -132,6 +132,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             </div>
             <div class="summary-card">
                 <h3>Total Projects</h3>
+                <div class="summary-value" id="projectCategoriesPlaceholder">-</div>
                 <div class="project-category-counts">
                     <span class="category-count-item planned" id="plannedProjectItem"><span class="category-count-num" id="plannedProjectCount">0</span> <span class="category-count-label">Planned</span></span>
                     <span class="category-count-item active" id="activeProjectItem"><span class="category-count-num" id="activeProjectCount">0</span> <span class="category-count-label">Active</span></span>
@@ -140,6 +141,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             </div>
             <div class="summary-card">
                 <h3>Project Status</h3>
+                <div class="summary-value" id="projectStatusPlaceholder">-</div>
                 <div class="project-status-counts">
                     <span class="status-count-item green" id="greenProjectItem"><span class="status-count-num" id="greenProjectCount">0</span> <span class="status-count-label">Green</span></span>
                     <span class="status-count-item yellow" id="yellowProjectItem"><span class="status-count-num" id="yellowProjectCount">0</span> <span class="status-count-label">Yellow</span></span>
@@ -1122,10 +1124,12 @@ def get_html_template(event_types, date_from, date_to, data_json):
             $('#plannedProjectCount').text(plannedCount);
             $('#activeProjectCount').text(activeCount);
             $('#closedProjectCount').text(closedCount);
-            // Hide categories with zero count
             $('#plannedProjectItem').toggle(plannedCount > 0);
             $('#activeProjectItem').toggle(activeCount > 0);
             $('#closedProjectItem').toggle(closedCount > 0);
+            const hasAnyProject = projects.length > 0;
+            $('#projectCategoriesPlaceholder').toggle(!hasAnyProject);
+            $('.project-category-counts').toggle(hasAnyProject);
             $('#totalPOCoverage').text(formatEUR(poCoverage));
             $('#totalCharges').text(formatEUR(totalCharges));
             $('#totalInvoices').text(formatEUR(invoices));
@@ -1174,6 +1178,12 @@ def get_html_template(event_types, date_from, date_to, data_json):
             const startIdx = pageSize === Infinity ? 0 : (currentPage - 1) * pageSize;
             const endIdx = pageSize === Infinity ? totalRows : Math.min(startIdx + pageSize, totalRows);
             const pageData = currentTableData.slice(startIdx, endIdx);
+
+            if (totalRows === 0) {{
+                const tr = $('<tr>');
+                tr.append($('<td colspan="10" style="text-align:center;color:var(--color-text-muted);padding:30px;">No data available</td>'));
+                tbody.append(tr);
+            }}
 
             pageData.forEach(row => {{
                 const tr = $('<tr>');
@@ -2458,6 +2468,12 @@ def get_html_template(event_types, date_from, date_to, data_json):
             // Convert sets to arrays for display
             const sortedMonths = Object.keys(monthlySummary).sort();
             
+            if (sortedMonths.length === 0) {{
+                const tr = $('<tr>');
+                tr.append($('<td colspan="4" style="text-align:center;color:var(--color-text-muted);padding:30px;">No data available</td>'));
+                tbody.append(tr);
+            }}
+
             sortedMonths.forEach(month => {{
                 const data = monthlySummary[month];
                 const tr = $('<tr>');
@@ -2531,6 +2547,10 @@ def get_html_template(event_types, date_from, date_to, data_json):
             const detailsDiv = $('#projectDetails');
             detailsDiv.empty();
             let greenCount = 0, yellowCount = 0, redCount = 0;
+
+            if (Object.keys(projectStats).length === 0) {{
+                detailsDiv.append($('<p style="text-align:center;color:var(--color-text-muted);padding:30px;">No data available</p>'));
+            }}
 
             Object.keys(projectStats).sort().forEach(project => {{
                 const stats = projectStats[project];
@@ -2817,6 +2837,9 @@ def get_html_template(event_types, date_from, date_to, data_json):
             $('#greenProjectItem').toggle(greenCount > 0);
             $('#yellowProjectItem').toggle(yellowCount > 0);
             $('#redProjectItem').toggle(redCount > 0);
+            const hasAnyStatus = greenCount + yellowCount + redCount > 0;
+            $('#projectStatusPlaceholder').toggle(!hasAnyStatus);
+            $('.project-status-counts').toggle(hasAnyStatus);
         }}
 
         function exportToCSV() {{
