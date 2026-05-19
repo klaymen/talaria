@@ -113,6 +113,7 @@ def get_css():
         color: var(--color-text);
         line-height: 1.6;
         transition: background 0.3s, color 0.3s;
+        padding-left: 52px;
         }
 
         .container {
@@ -152,51 +153,92 @@ def get_css():
         opacity: 0.9;
         }
 
-        /* Toolbar strip – fixed right edge */
-        .toolbar-strip {
+        /* ── Sidebar ────────────────────────────────────────────────────────── */
+        .sidebar {
         position: fixed;
-        top: 18px;
-        right: 0;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 52px;
+        background: linear-gradient(180deg, #2c3e6b 0%, #1e2d50 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 8px 0 10px;
+        z-index: 100;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.18);
+        }
+
+        .sidebar-top,
+        .sidebar-bottom {
         display: flex;
         flex-direction: column;
         align-items: center;
-        background: var(--color-primary);
-        border-radius: 8px 0 0 8px;
-        box-shadow: -2px 2px 10px rgba(0,0,0,0.18);
-        z-index: 1000;
-        padding: 6px 4px;
-        gap: 2px;
+        gap: 3px;
         }
 
-        .toolbar-btn {
-        width: 34px;
-        height: 34px;
-        background: transparent;
-        color: white;
-        border: none;
-        border-radius: 6px;
+        .sidebar-logo {
+        padding: 6px 0 10px;
         display: flex;
         align-items: center;
         justify-content: center;
+        opacity: 0.85;
+        color: #fff;
+        }
+
+        .sidebar-logo:hover { opacity: 1; background: transparent !important; }
+
+        .nav-item {
+        width: 38px;
+        height: 38px;
+        border: none;
+        background: transparent;
+        border-radius: 10px;
         cursor: pointer;
-        font-size: 18px;
-        font-weight: bold;
-        transition: background 0.2s;
-        }
-
-        .toolbar-btn:hover {
-        background: rgba(255,255,255,0.2);
-        }
-
-        a.toolbar-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.55);
+        transition: background 0.15s, color 0.15s;
+        position: relative;
         text-decoration: none;
         }
 
-        .toolbar-divider {
-        width: 22px;
-        height: 1px;
-        background: rgba(255,255,255,0.35);
-        margin: 2px 0;
+        .nav-item svg { pointer-events: none; }
+
+        .nav-item:hover,
+        .nav-item.is-active {
+        background: rgba(255, 255, 255, 0.13);
+        color: #ffffff;
+        }
+
+        .nav-item::after {
+        content: attr(data-tip);
+        position: absolute;
+        left: calc(100% + 10px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: #1a2438;
+        color: #e2e8f2;
+        font-size: 0.73rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        white-space: nowrap;
+        padding: 4px 9px;
+        border-radius: 6px;
+        pointer-events: none;
+        z-index: 200;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+        opacity: 0;
+        transition: opacity 0.15s;
+        }
+
+        .nav-item:hover::after { opacity: 1; }
+
+        .nav-divider {
+        width: 26px;
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        margin: 4px 0;
         }
 
         .help-modal {
