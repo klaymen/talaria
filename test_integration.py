@@ -89,7 +89,7 @@ class TestReadExcelData:
     def test_known_event_types(self, records):
         """All event types should be from the known set."""
         known = {'Working Time', 'PO', 'Invoice', 'Purchase', 'T&L',
-                 'Deferment', 'Financial Record', 'Closure'}
+                 'Deferment', 'Burn', 'Financial Record', 'Closure'}
         for r in records:
             if r['event_type']:
                 assert r['event_type'] in known, \

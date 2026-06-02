@@ -6,7 +6,7 @@ HTML template for the dashboard generator.
 from datetime import datetime
 from styles import get_css
 
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 
 
 
@@ -82,7 +82,8 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     <li><strong>Purchase:</strong> A direct expense (e.g. software licenses, hardware).</li>
                     <li><strong>T&amp;L:</strong> Travel &amp; Logistics expenses.</li>
                     <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a charge, not added to the budget. Used for the Invoice Balance calculation.</li>
-                    <li><strong>Deferment:</strong> Positive deferment adds to the budget and counts as invoiced. Negative deferment reduces the budget. Not included in charges.</li>
+                    <li><strong>Deferment:</strong> Adds to the project budget (like a PO). Not counted as invoiced. Not included in charges.</li>
+                    <li><strong>Burn:</strong> Informational only &mdash; like Invoice but for Deferment. Tracks consumption of the deferred budget. Does not affect the budget or charges. Used for the Deferment Balance calculation.</li>
                     <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage calculation (Charges&nbsp;/&nbsp;(Invoiced&nbsp;+&nbsp;Positive&nbsp;Financial&nbsp;Record)) but are <em>not</em> counted as invoiced. Negative amounts reduce the budget. Not included in charges.</li>
                     <li><strong>Closure:</strong> Marks the project end date. The budget forecast extends to the closure month.</li>
                 </ul>
@@ -91,15 +92,15 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 <p><strong>Charges/Invoiced:</strong> Ratio of total invoices to total charges, expressed as a percentage.</p>
                 <p><strong>Total Projects:</strong> Number of unique projects in the dataset.</p>
                 <p><strong>Project Status:</strong> Number of projects in each forecast status &mdash; green (positive), yellow (slightly negative), red (significantly negative).</p>
-                <p><strong>Budget:</strong> Total Purchase Order coverage across all projects (includes positive Deferment and is reduced by negative Deferment and negative Financial Records).</p>
+                <p><strong>Budget:</strong> Total Purchase Order coverage across all projects (includes Deferment and is reduced by negative Deferment and negative Financial Records). Burn does not affect the budget.</p>
                 <p><strong>Total Charges:</strong> Sum of Working Time fees + Purchase expenses + T&amp;L expenses. Deferment and Financial Record are not charges.</p>
-                <p><strong>Total Invoices:</strong> Total invoiced amounts (includes Invoice events and positive Deferment). Positive Financial Records are <em>not</em> counted as invoiced.</p>
+                <p><strong>Total Invoices:</strong> Total invoiced amounts (Invoice events only). Deferment and Burn are <em>not</em> counted as invoiced. Positive Financial Records are <em>not</em> counted as invoiced.</p>
                 <p><strong>Invoice Balance:</strong> (Invoiced + Positive Financial Record) minus Total Charges. Negative (red) = underinvoiced; positive = overinvoiced.</p>
                 <p><strong>Remaining Budget:</strong> Budget minus Total Charges.</p>
                 <p><strong>Coverage:</strong> Shown next to each project name. Calculated as <em>Total Charges / (Invoiced + Positive Financial Record)</em>. This ratio indicates how much of the invoiced-or-planned amount has actually been charged. Positive Financial Records represent amounts that are expected to be invoiced in the future, so they widen the denominator without affecting charges or the invoice totals.</p>
 
                 <h3>Charts</h3>
-                <p><strong>Budget by Project:</strong> Shows Budget, Charges, Invoices, Deferment, Financial Record, and Remaining Budget grouped by project.</p>
+                <p><strong>Budget by Project:</strong> Shows Budget, Charges, Invoices, Deferment, Financial Record, Burn, and Remaining Budget grouped by project.</p>
                 <p><strong>Timeline:</strong> Monthly charges and cumulative remaining budget over time.</p>
                 <p><strong>Monthly Working Time Summary:</strong> Aggregated hours and fees by month.</p>
                 <p><strong>Budget Forecast:</strong> Projects future budget trends based on average monthly charges from the last 2 months. Green = positive forecast, orange = negative.</p>
@@ -127,7 +128,9 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     <li><strong>Invoice Balance:</strong> (Invoiced + Positive Financial Record) minus Total Charges</li>
                     <li><strong>Remaining Budget:</strong> Current budget status (green if positive, red if negative)</li>
                     <li><strong>Working Time Fees / Purchase Expenses / T&amp;L Expenses:</strong> Breakdown by charge type</li>
-                    <li><strong>Deferment:</strong> Positive adds to the budget and counts as invoiced. Negative reduces the budget. Not a charge.</li>
+                    <li><strong>Deferment:</strong> Adds to the budget (like PO). Not counted as invoiced. Not a charge.</li>
+                    <li><strong>Burn:</strong> Informational only. Tracks consumption of the deferred budget (like Invoice tracks PO consumption). Deferment Balance = Deferment &minus; Burn. Not a charge.</li>
+                    <li><strong>Deferment Balance:</strong> Deferment minus Burn &mdash; the remaining unburned deferred amount.</li>
                     <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage ratio. Negative reduces the budget. Not a charge.</li>
                     <li><strong>Coverage:</strong> Shown next to the project name. Calculated as Charges / (Invoiced + Positive Financial Record).</li>
                     <li><strong>Burndown Rate:</strong> Average monthly charge used for budget forecasting</li>
@@ -265,7 +268,8 @@ def get_html_template(event_types, date_from, date_to, data_json):
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="2" checked> Invoices</label>
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="3" checked> Deferment</label>
                             <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="4" checked> Financial Record</label>
-                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="5" checked> Remaining Budget</label>
+                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="5" checked> Burn</label>
+                            <label><input type="checkbox" class="chart-filter-checkbox" data-dataset="6" checked> Remaining Budget</label>
                         </div>
                     </div>
                     <canvas id="projectAmountChart"></canvas>
@@ -1197,14 +1201,10 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     if (project) chargesByProject[project] = (chargesByProject[project] || 0) + amount;
                 }} else if (eventType === 'Deferment') {{
                     deferment += amount;  // Can be positive or negative
-                    // Positive deferment: add to PO coverage and count as invoiced
-                    // Negative deferment: subtract from PO coverage
-                    if (amount > 0) {{
-                        poCoverage += amount;
-                        invoices += amount;  // Count positive deferment as invoiced
-                    }} else if (amount < 0) {{
-                        poCoverage += amount;  // Subtract negative deferment from PO (amount is already negative)
-                    }}
+                    // Deferment: treated like PO — adds to budget, NOT counted as invoiced
+                    poCoverage += amount;
+                }} else if (eventType === 'Burn') {{
+                    // Burn is informational only (like Invoice but for Deferment); not a charge, not budget
                 }} else if (eventType === 'Financial Record') {{
                     financialRecord += amount;
                     if (amount > 0) {{
@@ -1422,6 +1422,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             const projectCharges = {{}};
             const projectInvoices = {{}};
             const projectDeferment = {{}};
+            const projectBurn = {{}};
             const projectFinancialRecord = {{}};
             const projectHours = {{}};
 
@@ -1440,17 +1441,16 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     projectPOCoverage[project] = (projectPOCoverage[project] || 0) + amount;
                 }}
                 
-                // Deferment handling: positive adds to PO and counts as invoiced, negative reduces PO
+                // Deferment handling: adds to PO like PO (not counted as invoiced)
                 if (eventType === 'Deferment' && amount) {{
                     projectDeferment[project] = (projectDeferment[project] || 0) + amount;
-                    if (amount > 0) {{
-                        // Positive deferment: add to PO coverage and count as invoiced
-                        projectPOCoverage[project] = (projectPOCoverage[project] || 0) + amount;
-                        projectInvoices[project] = (projectInvoices[project] || 0) + amount;
-                    }} else if (amount < 0) {{
-                        // Negative deferment: subtract from PO coverage
-                        projectPOCoverage[project] = (projectPOCoverage[project] || 0) + amount;
-                    }}
+                    // Deferment: treated like PO — always modifies budget, NOT invoiced
+                    projectPOCoverage[project] = (projectPOCoverage[project] || 0) + amount;
+                }}
+
+                // Burn: informational only (like Invoice but for Deferment) — tracks consumption of deferred budget
+                if (eventType === 'Burn' && amount) {{
+                    projectBurn[project] = (projectBurn[project] || 0) + amount;
                 }}
 
                 // Financial Record: negative reduces PO coverage; positive is used for Coverage ratio only
@@ -1536,7 +1536,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             }}
             
             // Financials by Project Chart (PO Coverage, Costs, Invoices, Deferment)
-            const allProjects = [...new Set([...Object.keys(projectPOCoverage), ...Object.keys(projectCharges), ...Object.keys(projectInvoices), ...Object.keys(projectDeferment), ...Object.keys(projectFinancialRecord)])].sort();
+            const allProjects = [...new Set([...Object.keys(projectPOCoverage), ...Object.keys(projectCharges), ...Object.keys(projectInvoices), ...Object.keys(projectDeferment), ...Object.keys(projectBurn), ...Object.keys(projectFinancialRecord)])].sort();
             
             // Show/hide placeholder
             if (allProjects.length === 0) {{
@@ -1609,12 +1609,20 @@ def get_html_template(event_types, date_from, date_to, data_json):
                             hidden: !checkboxStates[4]
                         }},
                         {{
+                            label: 'Burn (€)',
+                            data: allProjects.map(p => projectBurn[p] || 0),
+                            backgroundColor: cc1.forecastNeg + '99',
+                            borderColor: cc1.forecastNeg,
+                            borderWidth: 1,
+                            hidden: !checkboxStates[5]
+                        }},
+                        {{
                             label: 'Remaining Budget (€)',
                             data: allProjects.map(p => (projectPOCoverage[p] || 0) - (projectCharges[p] || 0)),
                             backgroundColor: cc1.budget + '99',
                             borderColor: cc1.budget,
                             borderWidth: 1,
-                            hidden: !checkboxStates[5]
+                            hidden: !checkboxStates[6]
                         }}
                     ]
                 }},
@@ -2632,6 +2640,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                         purchaseExpenses: 0,
                         tlExpenses: 0,
                         deferment: 0,
+                        burn: 0,
                         financialRecord: 0,
                         positiveFinancialRecord: 0,
                         totalHours: 0,
@@ -2655,14 +2664,11 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     projectStats[project].tlExpenses += amount;
                 }} else if (eventType === 'Deferment') {{
                     projectStats[project].deferment += amount;  // Can be positive or negative
-                    // Positive deferment: add to PO coverage and count as invoiced
-                    // Negative deferment: subtract from PO coverage
-                    if (amount > 0) {{
-                        projectStats[project].poCoverage += amount;
-                        projectStats[project].invoices += amount;  // Count positive deferment as invoiced
-                    }} else if (amount < 0) {{
-                        projectStats[project].poCoverage += amount;  // Subtract negative deferment from PO (amount is already negative)
-                    }}
+                    // Deferment: treated like PO — adds to budget, NOT counted as invoiced
+                    projectStats[project].poCoverage += amount;
+                }} else if (eventType === 'Burn') {{
+                    // Burn is informational only (like Invoice but for Deferment)
+                    projectStats[project].burn += amount;
                 }} else if (eventType === 'Financial Record') {{
                     projectStats[project].financialRecord += amount;
                     if (amount > 0) {{
@@ -2831,6 +2837,9 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 const purchaseExpensesFormatted = formatEUR(stats.purchaseExpenses);
                 const tlExpensesFormatted = formatEUR(stats.tlExpenses);
                 const defermentFormatted = formatEUR(stats.deferment || 0);
+                const burnFormatted = formatEUR(stats.burn || 0);
+                const defermentBalance = (stats.deferment || 0) - (stats.burn || 0);
+                const defermentBalanceFormatted = formatEUR(defermentBalance);
                 const financialRecordFormatted = formatEUR(stats.financialRecord || 0);
                 const forecastRateFormatted = formatEUR(avgMonthlyCharge);
                 
@@ -2942,6 +2951,14 @@ def get_html_template(event_types, date_from, date_to, data_json):
                             <div class="project-stat">
                                 <div class="project-stat-label">Deferment</div>
                                 <div class="project-stat-value" style="color: ${{(stats.deferment || 0) >= 0 ? 'var(--color-negative)' : 'var(--color-positive)'}}">${{defermentFormatted}}</div>
+                            </div>
+                            <div class="project-stat">
+                                <div class="project-stat-label">Burn</div>
+                                <div class="project-stat-value" style="color: ${{(stats.burn || 0) > 0 ? 'var(--color-negative)' : 'inherit'}}">${{burnFormatted}}</div>
+                            </div>
+                            <div class="project-stat">
+                                <div class="project-stat-label">Deferment Balance</div>
+                                <div class="project-stat-value" style="color: ${{defermentBalance < 0 ? 'var(--color-negative)' : 'inherit'}}">${{defermentBalanceFormatted}}</div>
                             </div>
                             <div class="project-stat">
                                 <div class="project-stat-label">Financial Record</div>
