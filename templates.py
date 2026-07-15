@@ -6,7 +6,7 @@ HTML template for the dashboard generator.
 from datetime import datetime
 from styles import get_css
 
-VERSION = '1.1.1'
+VERSION = '1.1.2'
 
 
 
@@ -84,7 +84,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     <li><strong>Invoice:</strong> Invoiced amounts. Informational only &mdash; not a charge, not added to the budget. Used for the Invoice Balance calculation.</li>
                     <li><strong>Deferment:</strong> Adds to the project budget (like a PO). Not counted as invoiced. Not included in charges.</li>
                     <li><strong>Burn:</strong> Informational only &mdash; like Invoice but for Deferment. Tracks consumption of the deferred budget. Does not affect the budget or charges. Used for the Deferment Balance calculation.</li>
-                    <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage calculation (Charges&nbsp;/&nbsp;(Invoiced&nbsp;+&nbsp;Positive&nbsp;Financial&nbsp;Record)) but are <em>not</em> counted as invoiced. Negative amounts reduce the budget. Not included in charges.</li>
+                    <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage calculation (Charges&nbsp;/&nbsp;(Invoiced&nbsp;+&nbsp;Positive&nbsp;Financial&nbsp;Record)) but are <em>not</em> counted as invoiced. Negative amounts first reduce previously accumulated positive Financial Records (reversal); any excess reduces the budget. Not included in charges.</li>
                     <li><strong>Closure:</strong> Marks the project end date. The budget forecast extends to the closure month.</li>
                 </ul>
 
@@ -92,7 +92,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 <p><strong>Charges/Invoiced:</strong> Ratio of total invoices to total charges, expressed as a percentage.</p>
                 <p><strong>Total Projects:</strong> Number of unique projects in the dataset.</p>
                 <p><strong>Project Status:</strong> Number of projects in each forecast status &mdash; green (positive), yellow (slightly negative), red (significantly negative).</p>
-                <p><strong>Budget:</strong> Total Purchase Order coverage across all projects (includes Deferment and is reduced by negative Deferment and negative Financial Records). Burn does not affect the budget.</p>
+                <p><strong>Budget:</strong> Total Purchase Order coverage across all projects (includes Deferment and is reduced by excess negative Financial Records that exceed accumulated positive Financial Records). Burn does not affect the budget.</p>
                 <p><strong>Total Charges:</strong> Sum of Working Time fees + Purchase expenses + T&amp;L expenses. Deferment and Financial Record are not charges.</p>
                 <p><strong>Total Invoices:</strong> Total invoiced amounts (Invoice events only). Deferment and Burn are <em>not</em> counted as invoiced. Positive Financial Records are <em>not</em> counted as invoiced.</p>
                 <p><strong>Invoice Balance:</strong> (Invoiced + Positive Financial Record) minus Total Charges. Negative (red) = underinvoiced; positive = overinvoiced.</p>
@@ -131,7 +131,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     <li><strong>Deferment:</strong> Adds to the budget (like PO). Not counted as invoiced. Not a charge.</li>
                     <li><strong>Burn:</strong> Informational only. Tracks consumption of the deferred budget (like Invoice tracks PO consumption). Deferment Balance = Deferment &minus; Burn. Not a charge.</li>
                     <li><strong>Deferment Balance:</strong> Deferment minus Burn &mdash; the remaining unburned deferred amount.</li>
-                    <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage ratio. Negative reduces the budget. Not a charge.</li>
+                    <li><strong>Financial Record:</strong> Positive amounts are used in the Coverage ratio. Negative amounts first reduce previously accumulated positive Financial Records; any excess reduces the budget. Not a charge.</li>
                     <li><strong>Coverage:</strong> Shown next to the project name. Calculated as Charges / (Invoiced + Positive Financial Record).</li>
                     <li><strong>Burndown Rate:</strong> Average monthly charge used for budget forecasting</li>
                 </ul>
@@ -149,15 +149,15 @@ def get_html_template(event_types, date_from, date_to, data_json):
         <!-- Summary Cards -->
         <div class="summary-section" id="sectionSummary">
             <div class="summary-card">
-                <h3>Charges/Invoiced</h3>
+                <h3>Charges/Invoiced <span class="tip" data-tip="Ratio of total charges to total invoiced amounts, as a percentage.">?</span></h3>
                 <div class="summary-value" id="chargesInvoicedRatio">-</div>
             </div>
             <div class="summary-card">
-                <h3>Coverage</h3>
+                <h3>Coverage <span class="tip" data-tip="Total Charges ÷ (Invoiced + Positive Financial Record). Indicates how much of the invoiced/planned amount has been charged.">?</span></h3>
                 <div class="summary-value" id="coverageRatio">-</div>
             </div>
             <div class="summary-card">
-                <h3>Total Projects</h3>
+                <h3>Total Projects <span class="tip" data-tip="Number of unique projects, split by lifecycle: Planned, Active, and Closed.">?</span></h3>
                 <div class="summary-value" id="projectCategoriesPlaceholder">-</div>
                 <div class="project-category-counts">
                     <span class="category-count-item planned" id="plannedProjectItem"><span class="category-count-num" id="plannedProjectCount">0</span> <span class="category-count-label">Planned</span></span>
@@ -166,7 +166,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 </div>
             </div>
             <div class="summary-card">
-                <h3>Project Status</h3>
+                <h3>Project Status <span class="tip" data-tip="Forecast status per project — Green: positive remaining budget; Yellow: slightly negative (within 10%); Red: significantly negative.">?</span></h3>
                 <div class="summary-value" id="projectStatusPlaceholder">-</div>
                 <div class="project-status-counts">
                     <span class="status-count-item green" id="greenProjectItem"><span class="status-count-num" id="greenProjectCount">0</span> <span class="status-count-label">Green</span></span>
@@ -175,27 +175,28 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 </div>
             </div>
             <div class="summary-card">
-                <h3>Budget</h3>
+                <h3>Budget <span class="tip" data-tip="Total PO coverage across all projects. Includes Deferment; reduced by negative Deferment and negative Financial Records.">?</span></h3>
                 <div class="summary-value" id="totalPOCoverage">-</div>
             </div>
             <div class="summary-card">
-                <h3>Total Charges</h3>
+                <h3>Total Charges <span class="tip" data-tip="Sum of Working Time fees + Purchase expenses + T&amp;L expenses. Deferment and Financial Record are not charges.">?</span></h3>
                 <div class="summary-value" id="totalCharges">-</div>
             </div>
             <div class="summary-card">
-                <h3>Total Invoices</h3>
+                <h3>Total Invoices <span class="tip" data-tip="Total invoiced amounts (Invoice events only). Deferment and Burn are not counted as invoiced.">?</span></h3>
                 <div class="summary-value" id="totalInvoices">-</div>
             </div>
+            <!-- Invoice Balance card — label text is a child span so the .tip sibling survives JS updates -->
             <div class="summary-card">
-                <h3 id="invoiceBalanceLabel">Invoice Balance</h3>
+                <h3 id="invoiceBalanceLabel"><span id="invoiceBalanceLabelText">Invoice Balance</span> <span class="tip" data-tip="(Invoiced + Positive Financial Record) minus Total Charges. Negative = underinvoiced; positive = overinvoiced.">?</span></h3>
                 <div class="summary-value" id="invoiceBalance">-</div>
             </div>
             <div class="summary-card">
-                <h3>Remaining Budget</h3>
+                <h3>Remaining Budget <span class="tip" data-tip="Budget minus Total Charges.">?</span></h3>
                 <div class="summary-value" id="remainingBudget">-</div>
             </div>
             <div class="summary-card">
-                <h3>Total Hours</h3>
+                <h3>Total Hours <span class="tip" data-tip="Sum of all Working Time hours across the filtered records.">?</span></h3>
                 <div class="summary-value" id="totalHours">-</div>
             </div>
         </div>
@@ -227,11 +228,11 @@ def get_html_template(event_types, date_from, date_to, data_json):
                 <div class="quick-filters">
                     <h3>Quick Filters</h3>
                     <div class="quick-filter-group">
-                        <label>Lifecycle:</label>
+                        <label>Lifecycle: <span class="tip" data-tip="Planned: no charges yet. Active: has charges and no Closure event. Closed: has a Closure event.">?</span></label>
                         <div class="quick-filter-buttons" id="lifecycleFilters"></div>
                     </div>
                     <div class="quick-filter-group">
-                        <label>Status:</label>
+                        <label>Status: <span class="tip" data-tip="Forecast status — Green: positive budget. Yellow: slightly negative (within 10%). Red: significantly negative.">?</span></label>
                         <div class="quick-filter-buttons" id="statusFilters"></div>
                     </div>
                     <div class="quick-filter-group">
@@ -239,7 +240,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                         <div class="quick-filter-buttons" id="projectFilters"></div>
                     </div>
                     <div class="quick-filter-group">
-                        <label>Financial Years & Quarters:</label>
+                        <label>Financial Years &amp; Quarters: <span class="tip" data-tip="FY starts April 1. FY26 = April 2025 – March 2026.">?</span></label>
                         <div class="quick-filter-buttons" id="financialFilters"></div>
                     </div>
                     <div class="quick-filter-group">
@@ -592,6 +593,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
                         workingTimeFees: 0,
                         purchaseExpenses: 0,
                         tlExpenses: 0,
+                        positiveFinancialRecord: 0,
                         events: []
                     }};
                 }}
@@ -607,8 +609,12 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     projectStats[project].tlExpenses += amount;
                 }} else if (eventType === 'Deferment') {{
                     projectStats[project].poCoverage += amount;
-                }} else if (eventType === 'Financial Record' && amount < 0) {{
-                    projectStats[project].poCoverage += amount;
+                }} else if (eventType === 'Financial Record') {{
+                    projectStats[project].positiveFinancialRecord += amount;
+                    if (projectStats[project].positiveFinancialRecord < 0) {{
+                        projectStats[project].poCoverage += projectStats[project].positiveFinancialRecord;
+                        projectStats[project].positiveFinancialRecord = 0;
+                    }}
                 }}
                 projectStats[project].events.push(row);
             }});
@@ -1207,11 +1213,11 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     // Burn is informational only (like Invoice but for Deferment); not a charge, not budget
                 }} else if (eventType === 'Financial Record') {{
                     financialRecord += amount;
-                    if (amount > 0) {{
-                        positiveFinancialRecord += amount;
-                    }} else if (amount < 0) {{
-                        // Negative: decrease budget (like negative deferment)
-                        poCoverage += amount;
+                    positiveFinancialRecord += amount;
+                    if (positiveFinancialRecord < 0) {{
+                        // Excess negative (beyond accumulated positives) reduces budget
+                        poCoverage += positiveFinancialRecord;
+                        positiveFinancialRecord = 0;
                     }}
                 }}
             }});
@@ -1269,7 +1275,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             $('#totalInvoices').text(formatEUR(invoices));
             // Update Invoice Balance display
             const invoiceBalanceElement = $('#invoiceBalance');
-            const invoiceBalanceLabelElement = $('#invoiceBalanceLabel');
+            const invoiceBalanceLabelElement = $('#invoiceBalanceLabelText');
 
             if (Math.abs(coverageGap) < 0.01) {{
                 invoiceBalanceLabelElement.text('Balanced');
@@ -1422,6 +1428,7 @@ def get_html_template(event_types, date_from, date_to, data_json):
             const projectCharges = {{}};
             const projectInvoices = {{}};
             const projectDeferment = {{}};
+            const projectPositiveFinancialRecord = {{}};
             const projectBurn = {{}};
             const projectFinancialRecord = {{}};
             const projectHours = {{}};
@@ -1453,11 +1460,13 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     projectBurn[project] = (projectBurn[project] || 0) + amount;
                 }}
 
-                // Financial Record: negative reduces PO coverage; positive is used for Coverage ratio only
+                // Financial Record: net positive used for Coverage; excess negative reduces PO coverage
                 if (eventType === 'Financial Record' && amount) {{
                     projectFinancialRecord[project] = (projectFinancialRecord[project] || 0) + amount;
-                    if (amount < 0) {{
-                        projectPOCoverage[project] = (projectPOCoverage[project] || 0) + amount;
+                    projectPositiveFinancialRecord[project] = (projectPositiveFinancialRecord[project] || 0) + amount;
+                    if (projectPositiveFinancialRecord[project] < 0) {{
+                        projectPOCoverage[project] = (projectPOCoverage[project] || 0) + projectPositiveFinancialRecord[project];
+                        projectPositiveFinancialRecord[project] = 0;
                     }}
                 }}
                 
@@ -1487,10 +1496,6 @@ def get_html_template(event_types, date_from, date_to, data_json):
                         monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
                     }}
                     if (eventType === 'Deferment' && amount) {{
-                        monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
-                    }}
-                    // Negative Financial Record reduces PO coverage
-                    if (eventType === 'Financial Record' && amount < 0) {{
                         monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
                     }}
 
@@ -1895,10 +1900,6 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     
                     // Deferment: positive adds to PO, negative subtracts from PO
                     if (eventType === 'Deferment' && amount) {{
-                        monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
-                    }}
-                    // Negative Financial Record reduces PO coverage
-                    if (eventType === 'Financial Record' && amount < 0) {{
                         monthlyPOCoverage[month] = (monthlyPOCoverage[month] || 0) + amount;
                     }}
 
@@ -2671,11 +2672,11 @@ def get_html_template(event_types, date_from, date_to, data_json):
                     projectStats[project].burn += amount;
                 }} else if (eventType === 'Financial Record') {{
                     projectStats[project].financialRecord += amount;
-                    if (amount > 0) {{
-                        projectStats[project].positiveFinancialRecord += amount;
-                    }} else if (amount < 0) {{
-                        // Negative: decrease budget (like negative deferment)
-                        projectStats[project].poCoverage += amount;
+                    projectStats[project].positiveFinancialRecord += amount;
+                    if (projectStats[project].positiveFinancialRecord < 0) {{
+                        // Excess negative (beyond accumulated positives) reduces budget
+                        projectStats[project].poCoverage += projectStats[project].positiveFinancialRecord;
+                        projectStats[project].positiveFinancialRecord = 0;
                     }}
                 }}
                 

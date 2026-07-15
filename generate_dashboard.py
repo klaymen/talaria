@@ -4,7 +4,7 @@ Project Tracking Dashboard Generator
 Reads an Excel file and generates an interactive static HTML dashboard.
 """
 
-import sys
+import argparse
 from pathlib import Path
 
 from parsers import read_excel_data
@@ -42,19 +42,38 @@ def generate_html(records):
     return html_template
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Generate an interactive HTML dashboard from a project tracking Excel file."
+    )
+    parser.add_argument(
+        "input",
+        help="Path to the Excel input file.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        default="output",
+        help="Directory where dashboard.html is written (default: output/).",
+    )
+    parser.add_argument(
+        "--output-file",
+        default="dashboard.html",
+        help="Output filename (default: dashboard.html).",
+    )
+    return parser.parse_args()
+
+
 def main():
-    """Main function."""
-    if len(sys.argv) < 2:
-        print("Usage: python generate_dashboard.py <excel_file> [output_file]")
-        print("Example: python generate_dashboard.py data.xlsx dashboard.html")
-        sys.exit(1)
+    args = parse_args()
+    input_file = Path(args.input)
+    output_dir = Path(args.output_dir)
+    output_file = output_dir / args.output_file
 
-    input_file = sys.argv[1]
-    output_file = sys.argv[2] if len(sys.argv) > 2 else 'dashboard.html'
-
-    if not Path(input_file).exists():
+    if not input_file.exists():
         print(f"Error: File '{input_file}' not found.")
-        sys.exit(1)
+        raise SystemExit(1)
+
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Reading Excel file: {input_file}")
     records = read_excel_data(input_file)
@@ -63,8 +82,7 @@ def main():
     print(f"Generating HTML dashboard: {output_file}")
     html_content = generate_html(records)
 
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(html_content)
+    output_file.write_text(html_content, encoding='utf-8')
 
     print(f"Dashboard generated successfully: {output_file}")
     print(f"Open {output_file} in your browser to view the dashboard.")

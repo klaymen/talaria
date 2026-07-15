@@ -399,6 +399,82 @@ def get_css():
         text-transform: uppercase;
         letter-spacing: 1px;
         margin-bottom: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        }
+
+        .tip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        border: 1px solid var(--color-border);
+        background: var(--color-surface-alt);
+        color: var(--color-text-secondary);
+        font-size: 0.65rem;
+        font-weight: 700;
+        line-height: 1;
+        cursor: help;
+        text-transform: none;
+        letter-spacing: 0;
+        flex-shrink: 0;
+        vertical-align: middle;
+        }
+
+        .tip::after {
+        content: attr(data-tip);
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: calc(100% + 8px);
+        min-width: 180px;
+        max-width: 260px;
+        background: #1a2438;
+        color: #e2e8f2;
+        border-radius: 6px;
+        padding: 7px 9px;
+        font-size: 0.73rem;
+        font-weight: 500;
+        line-height: 1.35;
+        text-transform: none;
+        letter-spacing: 0;
+        white-space: normal;
+        text-align: left;
+        z-index: 30;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.3);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.15s;
+        }
+
+        .tip::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: calc(100% + 1px);
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid #1a2438;
+        z-index: 30;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.15s;
+        }
+
+        .tip:hover::after,
+        .tip:focus-visible::after {
+        opacity: 1;
+        }
+
+        .tip:hover::before,
+        .tip:focus-visible::before {
+        opacity: 1;
         }
 
         .summary-value {
